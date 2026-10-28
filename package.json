@@ -9,9 +9,25 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@tiptap/extension-character-count": "^3.32.0",
+    "@tiptap/extension-color": "^3.32.0",
+    "@tiptap/extension-highlight": "^3.32.0",
+    "@tiptap/extension-placeholder": "^3.32.0",
+    "@tiptap/extension-text-align": "^3.32.0",
+    "@tiptap/extension-text-style": "^3.32.0",
+    "@tiptap/extension-typography": "^3.32.0",
+    "@tiptap/extension-unique-id": "^3.32.0",
+    "@tiptap/react": "^3.32.0",
+    "@tiptap/starter-kit": "^3.32.0",
+    "@types/cytoscape": "^3.21.9",
+    "@types/katex": "^0.16.8",
+    "cytoscape": "^3.34.4",
+    "katex": "^0.19.1",
     "next": "16.4.3",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "y-indexeddb": "^9.0.12",
+    "yjs": "^13.6.33"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",

@@ -1,0 +1,22 @@
+[
+  {"id":"hero-title","label":"Hero Title","kind":"heading","level":1,"align":"center","print":{"mode":"heading","align":"center","face":"\\Huge\\bfseries","spacing_before":"1.5em"},"description":"Primary title or opening title."},
+  {"id":"title","label":"Title","kind":"heading","level":2,"align":"center","print":{"mode":"heading","align":"center","face":"\\LARGE\\bfseries","spacing_before":"1.1em"},"description":"Major title within a file."},
+  {"id":"part-title","label":"Part Title","kind":"heading","level":2,"align":"center","print":{"mode":"heading","align":"center","face":"\\Large\\bfseries\\scshape","spacing_before":"1.1em"},"description":"Part or act title."},
+  {"id":"chapter-title","label":"Chapter Title","kind":"heading","level":3,"align":"left","print":{"mode":"heading","align":"left","face":"\\large\\bfseries","spacing_before":"0.8em"},"description":"Chapter-level title."},
+  {"id":"scene-title","label":"Scene Title","kind":"heading","level":4,"align":"left","print":{"mode":"heading","align":"left","face":"\\normalsize\\bfseries\\scshape","spacing_before":"0.6em"},"description":"Named scene or internal section."},
+  {"id":"music-formal-1","label":"Music Formal 1","kind":"paragraph","align":"center","italic":true,"print":{"mode":"line","align":"center","italic":true,"spacing_before":"0.45em"},"description":"Primary musical-form heading."},
+  {"id":"music-formal-2","label":"Music Formal 2","kind":"paragraph","align":"center","italic":true,"print":{"mode":"line","align":"center","italic":true,"spacing_before":"0.45em"},"description":"Secondary musical-form heading."},
+  {"id":"movement","label":"Movement","kind":"paragraph","align":"left","italic":true,"print":{"mode":"line","align":"left","italic":true,"spacing_before":"0.25em"},"description":"Movement or section marker."},
+  {"id":"scene-secondary","label":"Scene Secondary","kind":"paragraph","align":"left","italic":true,"print":{"mode":"line","align":"left","italic":true,"spacing_before":"0.25em"},"description":"Secondary scene label."},
+  {"id":"dateline","label":"Dateline","kind":"paragraph","align":"right","print":{"mode":"line","align":"right","spacing_before":"0.3em"},"description":"Date or time marker."},
+  {"id":"location","label":"Location","kind":"paragraph","align":"left","italic":true,"print":{"mode":"line","align":"left","italic":true,"spacing_before":"0.25em"},"description":"Location marker."},
+  {"id":"block-1","label":"Block 1","kind":"paragraph","align":"left","indent":"1","print":{"mode":"indent","indent":"0.35in","spacing_before":"0"},"description":"Indented block quotation or document block."},
+  {"id":"block-2","label":"Block 2","kind":"paragraph","align":"left","indent":"2","print":{"mode":"indent","indent":"0.7in","spacing_before":"0"},"description":"Deeply indented block quotation or document block."},
+  {"id":"interior-italic-1","label":"Interior Italic 1","kind":"paragraph","align":"left","italic":true,"indent":"1","print":{"mode":"indent","indent":"0.35in","italic":true,"spacing_before":"0"},"description":"First-level interior italic passage."},
+  {"id":"interior-italic-2","label":"Interior Italic 2","kind":"paragraph","align":"left","italic":true,"indent":"2","print":{"mode":"indent","indent":"0.7in","italic":true,"spacing_before":"0"},"description":"Second-level interior italic passage."},
+  {"id":"instrumentation","label":"Instrumentation","kind":"paragraph","align":"center","italic":true,"print":{"mode":"line","align":"center","italic":true,"spacing_before":"0.25em"},"description":"Instrumentation or materials line."},
+  {"id":"tempo-marking","label":"Tempo Marking","kind":"paragraph","align":"left","italic":true,"print":{"mode":"line","align":"left","italic":true,"spacing_before":"0.25em"},"description":"Tempo or performance marking."},
+  {"id":"epigraph","label":"Epigraph","kind":"paragraph","align":"center","italic":true,"print":{"mode":"line","align":"center","italic":true,"spacing_before":"0.25em"},"description":"Epigraph or opening quotation."},
+  {"id":"stage-direction","label":"Stage Direction","kind":"paragraph","align":"left","italic":true,"print":{"mode":"line","align":"left","italic":true,"spacing_before":"0.25em"},"description":"Stage or performance direction."},
+  {"id":"narrative","label":"Narrative","kind":"paragraph","align":"left","print":{"mode":"paragraph"},"description":"Explicit normal narrative prose."}
+]

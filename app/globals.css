@@ -22,5 +22,338 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "SF Pro", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-editorial {
+  font-family: "New York", "Charter", "Georgia", Cambria, serif;
+}
+
+/* macOS Slim Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(150, 150, 150, 0.25);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(150, 150, 150, 0.45);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* macOS Window Glassmorphism & Chrome */
+.mac-window-chrome {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* macOS Native Segmented Control */
+.mac-segmented-control {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  background: rgba(120, 120, 128, 0.16);
+  border-radius: 8px;
+  user-select: none;
+}
+
+.mac-segmented-item {
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: all 0.15s ease-in-out;
+  color: inherit;
+  opacity: 0.75;
+}
+
+.mac-segmented-item:hover {
+  opacity: 1;
+}
+
+.mac-segmented-item.active {
+  background: #ffffff;
+  color: #171717;
+  opacity: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  .mac-segmented-item.active {
+    background: #3a3a3c;
+    color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  }
+}
+
+/* Keep manuscript paragraphs visually distinct while editing. */
+.editor-content-shell .literary-editor {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.literary-editor p {
+  margin: 0 0 1rem;
+  text-align: left;
+  text-indent: 1.5em;
+}
+
+.editor-content-shell[data-paragraph-spacing="compact"] .literary-editor p {
+  margin-bottom: 0.5rem;
+}
+
+.editor-content-shell[data-paragraph-spacing="airy"] .literary-editor p {
+  margin-bottom: 1.5rem;
+}
+
+.literary-editor p.tether-paragraph-active {
+  border-radius: 0.25rem;
+  background: rgba(99, 102, 241, 0.12);
+  box-shadow: inset 3px 0 0 rgba(129, 140, 248, 0.85);
+  outline: 1px solid rgba(99, 102, 241, 0.25);
+  outline-offset: 0.25rem;
+}
+
+.literary-editor > p:first-child,
+.literary-editor h2 + p,
+.literary-editor blockquote p {
+  text-indent: 0;
+}
+
+.literary-editor h2 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.literary-editor h3 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.literary-editor a {
+  color: #a5b4fc;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.literary-editor mark {
+  border-radius: 0.15rem;
+  color: #0f172a;
+  padding: 0 0.15em;
+}
+
+.literary-editor p.is-editor-empty:first-child::before,
+.literary-editor p.is-empty::before {
+  color: #64748b;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.literary-editor ul,
+.literary-editor ol {
+  margin: 0 0 1rem;
+  padding-left: 1.75rem;
+}
+
+.literary-editor li > p {
+  margin-bottom: 0.25rem;
+  text-indent: 0;
+}
+
+.literary-editor blockquote {
+  border-left: 3px solid #6366f1;
+  color: #cbd5e1;
+  margin: 1rem 0;
+  padding-left: 1rem;
+}
+
+.literary-editor hr.scene-break {
+  border: 0;
+  border-top: 1px solid #475569;
+  margin: 2rem auto;
+  width: 35%;
+}
+
+/* Markdown-backed semantic block styles. The data attribute is the stable
+   contract shared by Tiptap, the importer, and the formatter. */
+.literary-editor [data-semantic-style] {
+  text-indent: 0;
+}
+
+.literary-editor [data-semantic-style="hero-title"] {
+  margin: 2.5rem 0 1.5rem;
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.literary-editor [data-semantic-style="title"] {
+  margin: 2rem 0 1.25rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.literary-editor [data-semantic-style="part-title"] {
+  margin: 2rem 0 1.25rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.literary-editor [data-semantic-style="chapter-title"] {
+  margin: 2rem 0 1rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.literary-editor [data-semantic-style="scene-title"] {
+  margin: 1.5rem 0 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.literary-editor [data-semantic-style="music-formal-1"],
+.literary-editor [data-semantic-style="music-formal-2"],
+.literary-editor [data-semantic-style="movement"],
+.literary-editor [data-semantic-style="scene-secondary"],
+.literary-editor [data-semantic-style="location"],
+.literary-editor [data-semantic-style="instrumentation"],
+.literary-editor [data-semantic-style="tempo-marking"],
+.literary-editor [data-semantic-style="epigraph"],
+.literary-editor [data-semantic-style="stage-direction"] {
+  font-style: italic;
+  text-indent: 0;
+}
+
+.literary-editor [data-semantic-style="music-formal-1"] {
+  margin: 1.5rem 0 0.25rem;
+  text-align: center;
+}
+
+.literary-editor [data-semantic-style="music-formal-2"] {
+  margin: 0.25rem 0 0.75rem;
+  text-align: center;
+}
+
+.literary-editor [data-semantic-style="dateline"] {
+  text-align: right;
+  text-indent: 0;
+}
+
+.literary-editor [data-semantic-style="block-1"],
+.literary-editor [data-semantic-style="interior-italic-1"] {
+  margin-left: 2rem;
+  text-indent: 0;
+}
+
+.literary-editor [data-semantic-style="block-2"],
+.literary-editor [data-semantic-style="interior-italic-2"] {
+  margin-left: 4rem;
+  text-indent: 0;
+}
+
+.literary-editor [data-semantic-style="interior-italic-1"],
+.literary-editor [data-semantic-style="interior-italic-2"] {
+  font-style: italic;
+}
+
+.literary-editor [data-semantic-style="instrumentation"] {
+  text-align: center;
+}
+
+.literary-editor [data-semantic-style="epigraph"] {
+  margin: 2rem auto;
+  max-width: 34rem;
+  text-align: center;
+}
+
+.semantic-style-control select {
+  color-scheme: dark;
+}
+
+/* Authentic Sign & Block Lettering */
+.typeset-sign-block {
+  text-indent: 0 !important;
+  text-align: center;
+  margin: 1.25rem auto;
+  font-family: var(--font-editorial, Georgia, serif);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 12.5px;
+  color: #1a1715;
+}
+
+.typeset-sign-card {
+  text-indent: 0 !important;
+  text-align: center;
+  font-style: normal !important;
+  margin: 1.5rem auto;
+  padding: 0.75rem 1.5rem;
+  border-top: 1px solid rgba(44, 40, 37, 0.4);
+  border-bottom: 1px solid rgba(44, 40, 37, 0.4);
+  font-family: var(--font-editorial, Georgia, serif);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 12px;
+  color: #1a1715;
+  max-width: 28rem;
+}
+
+/* WYSIWYG Print & PDF Export Rules */
+@media print {
+  @page {
+    size: 6in 9in;
+    margin: 0.75in;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  /* Hide all app chrome, sidebars, controls, toolbar buttons */
+  header, nav, aside, .no-print, button, select, .mac-window-chrome {
+    display: none !important;
+  }
+
+  /* Reset layout containers so typeset pages print continuously and cleanly */
+  .typeset-preview-root,
+  .typeset-page-container {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+  }
+
+  article {
+    page-break-inside: avoid;
+  }
 }
