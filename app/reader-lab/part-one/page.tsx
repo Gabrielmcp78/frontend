@@ -18,6 +18,7 @@ export default function PartOneRiverPage(){
  return <main style={{maxWidth:1170,margin:"0 auto",padding:"26px clamp(12px,4vw,40px)",fontFamily:"system-ui, sans-serif",color:"#e5ebe8",background:"#141c22",minHeight:"100vh"}}>
    <nav><Link href="/reader-lab" style={{color:"#a7dbdc"}}>← Trajectory graph</Link></nav>
    <h1>Part One: The River</h1>
+   <p><Link href="/reader-lab/testing" style={{color:"#a7dbdc",textDecoration:"underline"}}>Open blind reader testing lab →</Link></p>
    <p style={{maxWidth:850,color:"#b9c7c8"}}>A preliminary editorial calibration of the first five chapters. The river widens with unresolved alternatives, the flow marks urgency, and hazard marks the stakes. These are interpretive assessments—not observed human responses.</p>
    <div style={{display:"flex",gap:16,flexWrap:"wrap",marginBottom:12}}>
      <label><input type="checkbox" checked={showStakes} onChange={e=>setShowStakes(e.target.checked)}/> Show stakes / rapids</label>
