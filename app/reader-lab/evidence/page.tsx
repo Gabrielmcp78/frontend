@@ -10,6 +10,7 @@ export default function EvidenceLedgerPage(){
  return <main style={{maxWidth:1050,margin:"0 auto",padding:"30px 22px",fontFamily:"system-ui,sans-serif",lineHeight:1.5}}>
  <nav><Link href="/reader-lab/testing">← Blind Reader Lab</Link></nav>
  <h1>Reader Evidence Ledger · Part One</h1>
+ <p><Link href="/reader-lab/friction" style={{textDecoration:"underline"}}>Open independent friction study →</Link></p>
  <p>Independent responses are kept separate, including their disagreements. All entries below are analyst-coded claims from the supplied staged AI responses, not human-reader measurements. Unprompted observations and targeted follow-ups are labeled separately.</p>
  <p><strong>Text revision:</strong> <code>{EVIDENCE_COMMIT}</code> · <strong>Checkpoint:</strong> 5b · <strong>Models:</strong> Gemini 3.8 Flash (two sessions)</p>
  <div style={{display:"flex",flexWrap:"wrap",gap:12,margin:"20px 0"}}>
