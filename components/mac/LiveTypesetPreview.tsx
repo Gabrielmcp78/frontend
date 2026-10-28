@@ -277,8 +277,14 @@ function applyTypesetToProse(
   const m = pHtml.match(/^(\s*<p[^>]*>)([\s\S]*?)(<\/p>)$/i);
   if (!m) return pHtml;
   let pOpen = m[1];
-  const pInner = m[2];
+  let pInner = m[2];
   const pClose = m[3];
+
+  // Decode non-breaking spaces and common HTML entities so &nbsp; never gets uppercased to &NBSP;
+  pInner = pInner
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&(?:ensp|emsp);/gi, " ")
+    .replace(/&amp;/gi, "&");
 
   // Dynamic indent for each chapter opening line (replacing the drop cap)
   if (isFirstSceneOfChapter) {
@@ -321,7 +327,7 @@ function applyTypesetToProse(
 
     for (let s = 0; s < segments.length; s++) {
       const seg = segments[s];
-      if (/^\s+$/.test(seg)) {
+      if (/^\s+$/.test(seg) || !seg.trim()) {
         transformedText += seg;
         continue;
       }
@@ -371,8 +377,19 @@ const FORMAL_STRUCTURES = new Set([
   "RECOGNITION (CODA)",
 ]);
 
+function cleanBlockText(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&(?:ensp|emsp);/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export interface ProcessedSceneResult {
   cleanTitle: string;
+  coordDisplay: string | null;
   formalStructure: string | null;
   dateline: string | null;
   tempoMarking: string | null;
@@ -456,16 +473,11 @@ function processSceneContent(
   isFirstSceneOfChapter: boolean,
   openingIndentInches: number = 1.5
 ): ProcessedSceneResult {
-  const hasAuthoredTitle = Boolean(
-    rawSceneTitle &&
-      rawSceneTitle.trim() &&
-      rawSceneTitle.trim().toUpperCase() !== "SCENE"
-  );
-
-  const { formalStructure, sceneTitle, dateline: parsedDateline } = parseSceneTitle(
+  const { formalStructure: parsedFormal, sceneTitle, dateline: parsedDateline } = parseSceneTitle(
     rawSceneTitle
   );
   let cleanTitle = sceneTitle;
+  let formalStructure: string | null = parsedFormal;
   let dateline: string | null = parsedDateline;
   let tempoMarking: string | null = null;
 
@@ -473,41 +485,117 @@ function processSceneContent(
   const blockRegex = /(<(?:p|h[1-6]|blockquote|div|hr)[^>]*>[\s\S]*?<\/(?:p|h[1-6]|blockquote|div)>|<hr[^>]*\/?>)/gi;
   const blocks = contentHtml.match(blockRegex) || [contentHtml];
 
-  // Check if first block has thematic slug e.g. "| TRAVEL |"
-  if (blocks.length > 0) {
-    const slugMatch = blocks[0].replace(/<[^>]+>/g, "").trim().match(/^\|\s*([^|]+)\s*\|$/);
-    if (slugMatch) {
-      if (!cleanTitle) cleanTitle = slugMatch[1].trim();
+  // Loop through leading blocks to extract authored scene header elements
+  while (blocks.length > 0) {
+    const b0 = blocks[0];
+    const text = cleanBlockText(b0);
+
+    // If completely empty block, discard it
+    if (!text) {
       blocks.shift();
+      continue;
     }
+
+    // 1. Thematic slug e.g. "| Detour |" or "| TRAVEL |"
+    const slugMatch = text.match(/^\|\s*([^|]+)\s*\|$/);
+    if (slugMatch) {
+      const slugVal = slugMatch[1].trim();
+      if (!cleanTitle) {
+        cleanTitle = slugVal;
+      } else if (!formalStructure && FORMAL_STRUCTURES.has(slugVal.toUpperCase())) {
+        formalStructure = slugVal.toUpperCase();
+      } else if (!cleanTitle.toLowerCase().includes(slugVal.toLowerCase())) {
+        cleanTitle = `${cleanTitle} | ${slugVal}`;
+      }
+      blocks.shift();
+      continue;
+    }
+
+    // 2. Music formal voice: data-semantic-style="music-formal-1" | "music-formal-2" OR text matching formal structures
+    const isMusicFormalStyle = /data-semantic-style=["']music-formal-[12]["']/i.test(b0);
+    const matchesFormalKeyword = Array.from(FORMAL_STRUCTURES).some((fs) =>
+      text.toUpperCase().startsWith(fs)
+    );
+    if (isMusicFormalStyle || matchesFormalKeyword) {
+      if (!formalStructure) {
+        formalStructure = text.toUpperCase();
+      }
+      blocks.shift();
+      continue;
+    }
+
+    // 3. Scene Title: data-semantic-style="scene-title" OR <h1-6>
+    const isSceneTitleStyle =
+      /data-semantic-style=["'](?:scene-title|hero-title|part-title|chapter-title)["']/i.test(b0) ||
+      /^<h[1-6]\b/i.test(b0);
+    if (isSceneTitleStyle) {
+      const parsed = parseSceneTitle(text);
+      if (parsed.formalStructure && !formalStructure) {
+        formalStructure = parsed.formalStructure;
+      }
+      if (parsed.dateline && !dateline) {
+        dateline = parsed.dateline;
+      }
+      if (parsed.sceneTitle) {
+        cleanTitle = parsed.sceneTitle;
+      } else if (text) {
+        cleanTitle = text;
+      }
+      blocks.shift();
+      continue;
+    }
+
+    // 4. Tempo Marking: data-semantic-style="tempo-marking" OR recognized tempo regex
+    const isTempoStyle = /data-semantic-style=["']tempo-marking["']/i.test(b0);
+    const isTempoRegex =
+      /^(?:Andante|Adagio|Allegro|Moderato|Presto|Largo|Lento|Tempo\s+giusto|Mosso|Grave|Vivace|Maestoso)\b/i.test(
+        text
+      ) && text.length < 70;
+    if (isTempoStyle || isTempoRegex) {
+      if (!tempoMarking) {
+        tempoMarking = text;
+      }
+      blocks.shift();
+      continue;
+    }
+
+    // 5. Location / Dateline: data-semantic-style="location" | "dateline" OR isDatelineParagraph OR dateline pattern
+    const isLocationStyle = /data-semantic-style=["'](?:location|dateline)["']/i.test(b0);
+    const isDatePattern =
+      isDatelineParagraph(b0) ||
+      (/\b(?:Buffalo|Cambridge|Ithaca|NY|MA|New York|Present Day|Morning|Night|Quad|Hall)\b/i.test(text) &&
+        text.length < 80 &&
+        !/[.!?]$/.test(text));
+    if (isLocationStyle || isDatePattern) {
+      const formattedDate = text.replace(/\s*-\s*/g, " — ").replace(/\s*·\s*/g, " · ");
+      dateline = dateline ? `${dateline} · ${formattedDate}` : formattedDate;
+      blocks.shift();
+      continue;
+    }
+
+    // First block that is not metadata -> stop stripping, this is prose!
+    break;
   }
 
   // Fallback to canonical scene title if cleanTitle is still empty or redundant with formal structure
-  if ((!cleanTitle || cleanTitle.toUpperCase() === formalStructure) && coord && CANONICAL_SCENE_TITLES[coord]) {
+  if (
+    (!cleanTitle || cleanTitle.toUpperCase() === formalStructure) &&
+    coord &&
+    CANONICAL_SCENE_TITLES[coord]
+  ) {
     cleanTitle = CANONICAL_SCENE_TITLES[coord];
   } else if (cleanTitle.toUpperCase() === formalStructure) {
     cleanTitle = "";
   }
 
-  // 1. Check leading block for tempo marking
-  if (blocks.length > 0) {
-    const b0 = blocks[0];
-    const text0 = b0.replace(/<[^>]+>/g, "").trim();
-    if (
-      /data-semantic-style=["']tempo-marking["']/i.test(b0) ||
-      (/^(?:Andante|Adagio|Allegro|Moderato|Presto|Largo|Lento|Tempo\s+giusto|Mosso|Grave|Vivace|Maestoso)\b/i.test(text0) &&
-        text0.length < 70)
-    ) {
-      tempoMarking = text0;
-      blocks.shift();
+  // Extract coordinate prefix from cleanTitle if present (e.g. "II.1 THE INSTRUMENT SHOP" or "7.1 TRAVEL")
+  let coordDisplay: string | null = null;
+  if (cleanTitle) {
+    const coordMatch = cleanTitle.match(/^([IVXLCDM]+\.\d+|\d+\.\d+)\s*[:—–-]?\s*(.*)$/i);
+    if (coordMatch) {
+      coordDisplay = coordMatch[1].trim();
+      cleanTitle = coordMatch[2].trim();
     }
-  }
-
-  // 2. Check next leading block for dateline / date line (e.g. March 21, 2005)
-  if (blocks.length > 0 && isDatelineParagraph(blocks[0])) {
-    const dateText = blocks[0].replace(/<[^>]+>/g, "").trim();
-    dateline = dateline ? `${dateline} · ${dateText}` : dateText;
-    blocks.shift();
   }
 
   // Fallback to canonical tempo mapping if not found in blocks
@@ -519,6 +607,14 @@ function processSceneContent(
       null;
   }
 
+  const hasAuthoredTitle = Boolean(
+    (rawSceneTitle &&
+      rawSceneTitle.trim() &&
+      rawSceneTitle.trim().toUpperCase() !== "SCENE") ||
+      cleanTitle ||
+      formalStructure
+  );
+
   // Format block letters, chalkboards, and signs before math/prose detection
   const processedWithSigns = formatBlockLettersAndSigns(blocks.join(""));
 
@@ -526,13 +622,15 @@ function processSceneContent(
   const processedWithMath = renderMathInHtml(processedWithSigns);
   const postMathBlocks = processedWithMath.match(blockRegex) || [processedWithMath];
 
-  // Typeset first true prose paragraph (skip blockquotes, epigraphs, instrumentation, stage directions)
+  // Typeset first true prose paragraph (skip non-prose and all semantic styles)
   let proseFound = false;
   for (let i = 0; i < postMathBlocks.length; i++) {
     const blk = postMathBlocks[i];
     if (
       /^<p\b/i.test(blk) &&
-      !/data-semantic-style=["'](?:epigraph|instrumentation|stage-direction|block-1|block-2)["']/i.test(blk)
+      !/data-semantic-style=["'](?:epigraph|instrumentation|stage-direction|block-1|block-2|scene-title|scene-secondary|tempo-marking|location|dateline|music-formal-1|music-formal-2|movement)["']/i.test(
+        blk
+      )
     ) {
       postMathBlocks[i] = applyTypesetToProse(blk, isFirstSceneOfChapter, openingIndentInches);
       proseFound = true;
@@ -542,6 +640,7 @@ function processSceneContent(
 
   return {
     cleanTitle,
+    coordDisplay,
     formalStructure,
     dateline,
     tempoMarking,
@@ -1378,6 +1477,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
 
                               const {
                                 cleanTitle: sceneTitleText,
+                                coordDisplay,
                                 formalStructure,
                                 dateline: sceneDateline,
                                 tempoMarking: sceneTempo,
@@ -1394,6 +1494,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
 
                               const sceneNumInChapter =
                                 sc.scene_number_in_chapter ?? (sIdx + 1);
+                              const finalCoord = coordDisplay || sceneNumInChapter;
 
                               return (
                                 <article key={sc.scene_number}>
@@ -1439,7 +1540,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                                 style={{ fontSize: `${tuning.sceneNumSize}px` }}
                                                 className="font-serif font-semibold tracking-[0.18em] text-[#1a1715] leading-none shrink-0"
                                               >
-                                                {sceneNumInChapter}
+                                                {finalCoord}
                                               </span>
                                               {sceneTitleText && (
                                                 <span
