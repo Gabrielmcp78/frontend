@@ -44,6 +44,7 @@ export default function ReaderLabPreviewPage() {
         <strong>DEMONSTRATION ONLY — NO READER DATA</strong>
         <p style={{ margin: "6px 0 0" }}>All twelve positions, target bands, and bridge events below are invented to demonstrate the interface. They are not assessments of String Theories or human-reader measurements. This route makes no API calls and cannot modify manuscript files.</p>
       </div>
+      <p style={{marginBottom:18}}><Link href="/reader-lab/part-one" style={{fontWeight:700,textDecoration:"underline"}}>Open the Part One river map (Chapters 1–5) →</Link></p>
       <ReaderRiverLab observations={observations} bridges={bridges} manuscriptCommit={sampleCommit} />
       <p style={{ marginTop: 24, fontSize: 13, opacity: .75 }}>Preview route: /reader-lab · Isolated frontend feature branch · Experimental visualization</p>
     </main>
