@@ -377,6 +377,101 @@ const FORMAL_STRUCTURES = new Set([
   "RECOGNITION (CODA)",
 ]);
 
+function tokenizeTopLevelBlocks(html: string): string[] {
+  if (!html) return [];
+
+  // Browser / DOM environment: use DOMParser for standard-compliant HTML tree parsing
+  if (typeof window !== "undefined" && typeof DOMParser !== "undefined") {
+    try {
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const children = Array.from(doc.body.childNodes);
+      const blocks: string[] = [];
+      for (const node of children) {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          blocks.push((node as HTMLElement).outerHTML);
+        } else if (node.nodeType === Node.TEXT_NODE) {
+          const text = node.textContent?.trim();
+          if (text) {
+            blocks.push(`<p>${node.textContent}</p>`);
+          }
+        }
+      }
+      if (blocks.length > 0) return blocks;
+    } catch {
+      // Fallback to string tokenizer
+    }
+  }
+
+  // Pure string tokenizer fallback (Node.js SSR / Jest tests)
+  const blocks: string[] = [];
+  let i = 0;
+  const len = html.length;
+
+  while (i < len) {
+    while (i < len && /\s/.test(html[i])) i++;
+    if (i >= len) break;
+
+    // Check for comment
+    if (html.startsWith("<!--", i)) {
+      const commentEnd = html.indexOf("-->", i);
+      if (commentEnd === -1) {
+        blocks.push(html.slice(i));
+        break;
+      }
+      blocks.push(html.slice(i, commentEnd + 3));
+      i = commentEnd + 3;
+      continue;
+    }
+
+    if (html[i] === "<") {
+      // Void / self-closing tags
+      const voidMatch = html.slice(i).match(/^<(hr|br|img|meta|link|input)[^>]*\/?>/i);
+      if (voidMatch) {
+        blocks.push(voidMatch[0]);
+        i += voidMatch[0].length;
+        continue;
+      }
+
+      // Opening tag with depth tracking
+      const openMatch = html.slice(i).match(/^<([a-zA-Z0-9]+)(\s[^>]*)?>/);
+      if (openMatch) {
+        const tagName = openMatch[1].toLowerCase();
+        let depth = 1;
+        let j = i + openMatch[0].length;
+
+        const tagRegex = new RegExp("</?" + tagName + "(\\s[^>]*)?>", "gi");
+        tagRegex.lastIndex = j;
+
+        let match;
+        let blockEnd = len;
+        while ((match = tagRegex.exec(html)) !== null) {
+          if (match[0].startsWith("</")) {
+            depth--;
+            if (depth === 0) {
+              blockEnd = tagRegex.lastIndex;
+              break;
+            }
+          } else if (!match[0].endsWith("/>")) {
+            depth++;
+          }
+        }
+        blocks.push(html.slice(i, blockEnd));
+        i = blockEnd;
+        continue;
+      }
+    }
+
+    let nextOpen = html.indexOf("<", i);
+    if (nextOpen === -1) nextOpen = len;
+    const textChunk = html.slice(i, nextOpen).trim();
+    if (textChunk) {
+      blocks.push(textChunk);
+    }
+    i = nextOpen;
+  }
+  return blocks;
+}
+
 function cleanBlockText(html: string): string {
   return html
     .replace(/<[^>]+>/g, "")
@@ -481,9 +576,8 @@ function processSceneContent(
   let dateline: string | null = parsedDateline;
   let tempoMarking: string | null = null;
 
-  // Tokenize top-level HTML blocks: <p...>, <h1-6...>, <blockquote...>, <div...>, <hr...>
-  const blockRegex = /(<(?:p|h[1-6]|blockquote|div|hr)[^>]*>[\s\S]*?<\/(?:p|h[1-6]|blockquote|div)>|<hr[^>]*\/?>)/gi;
-  const blocks = contentHtml.match(blockRegex) || [contentHtml];
+  // Tokenize top-level HTML blocks safely preserving nested elements and quotes
+  const blocks = tokenizeTopLevelBlocks(contentHtml);
 
   // Loop through leading blocks to extract authored scene header elements
   while (blocks.length > 0) {
@@ -524,7 +618,21 @@ function processSceneContent(
       continue;
     }
 
-    // 3. Scene Title: data-semantic-style="scene-title" OR <h1-6>
+    // 3. Tempo Marking: data-semantic-style="tempo-marking" OR recognized tempo regex (e.g. "Andante con distanza")
+    const isTempoStyle = /data-semantic-style=["']tempo-marking["']/i.test(b0);
+    const isTempoRegex =
+      /^(?:Andante|Adagio|Allegro|Moderato|Presto|Largo|Lento|Tempo\s+giusto|Mosso|Grave|Vivace|Maestoso)\b/i.test(
+        text
+      ) && text.length < 70;
+    if (isTempoStyle || isTempoRegex) {
+      if (!tempoMarking) {
+        tempoMarking = text;
+      }
+      blocks.shift();
+      continue;
+    }
+
+    // 4. Scene Title: data-semantic-style="scene-title" OR <h1-6> (excluding recognized tempos)
     const isSceneTitleStyle =
       /data-semantic-style=["'](?:scene-title|hero-title|part-title|chapter-title)["']/i.test(b0) ||
       /^<h[1-6]\b/i.test(b0);
@@ -540,20 +648,6 @@ function processSceneContent(
         cleanTitle = parsed.sceneTitle;
       } else if (text) {
         cleanTitle = text;
-      }
-      blocks.shift();
-      continue;
-    }
-
-    // 4. Tempo Marking: data-semantic-style="tempo-marking" OR recognized tempo regex
-    const isTempoStyle = /data-semantic-style=["']tempo-marking["']/i.test(b0);
-    const isTempoRegex =
-      /^(?:Andante|Adagio|Allegro|Moderato|Presto|Largo|Lento|Tempo\s+giusto|Mosso|Grave|Vivace|Maestoso)\b/i.test(
-        text
-      ) && text.length < 70;
-    if (isTempoStyle || isTempoRegex) {
-      if (!tempoMarking) {
-        tempoMarking = text;
       }
       blocks.shift();
       continue;
@@ -620,7 +714,7 @@ function processSceneContent(
 
   // Render LaTeX math across remaining blocks (with left & right vertical border rules)
   const processedWithMath = renderMathInHtml(processedWithSigns);
-  const postMathBlocks = processedWithMath.match(blockRegex) || [processedWithMath];
+  const postMathBlocks = tokenizeTopLevelBlocks(processedWithMath);
 
   // Typeset first true prose paragraph (skip non-prose and all semantic styles)
   let proseFound = false;
@@ -708,8 +802,9 @@ export interface LayoutTuningParams {
   // 2. Scene Counterpoint Header
   ghostSize: number; // px, 40 to 130
   ghostYShift: number; // %, -60 to +30
-  ghostXShift: number; // px, -40 to +20
+  ghostXShift: number; // px, -60 to +60
   ghostOpacity: number; // 0.1 to 1.0
+  sceneHeaderLeftOffset: number; // px, -20 to 80 (pull closer to left, 0 = flush left over ghost numeral)
   ruleThickness: number; // px, 0.5 to 3.0
   titleGap: number; // px, 0 to 12
   sceneHeaderBottomGap: number; // px, 2 to 32
@@ -758,6 +853,7 @@ export const DEFAULT_LAYOUT_TUNING: LayoutTuningParams = {
   ghostYShift: -17,
   ghostXShift: -12,
   ghostOpacity: 0.8,
+  sceneHeaderLeftOffset: 0,
   ruleThickness: 1,
   titleGap: 2,
   sceneHeaderBottomGap: 12,
@@ -1515,21 +1611,26 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                       )}`}
                                       title={showTuner ? "Click to tune Scene Header style" : undefined}
                                     >
-                                      <div className="flex items-center relative">
-                                        {/* Large Light-Stone Ghost Chapter Numeral: 2/3 above, 1/3 below, sitting BEHIND the rule & text */}
+                                      <div className="flex items-center relative w-full">
+                                        {/* Large Light-Stone Ghost Chapter Numeral: in background layer (z-0) behind the rule & text */}
                                         <div
                                           style={{
                                             fontSize: `${tuning.ghostSize}px`,
-                                            transform: `translateY(${tuning.ghostYShift}%) translateX(${tuning.ghostXShift}px)`,
+                                            transform: `translateY(calc(-50% + ${tuning.ghostYShift}%)) translateX(${tuning.ghostXShift}px)`,
                                             opacity: tuning.ghostOpacity,
                                           }}
-                                          className="font-serif font-light text-stone-300 leading-none select-none shrink-0 tracking-tight z-0 pointer-events-none"
+                                          className="font-serif font-light text-stone-300 leading-none select-none absolute left-0 top-1/2 z-0 pointer-events-none tracking-tight"
                                         >
                                           {chapterNum !== null ? chapterNum : ""}
                                         </div>
 
-                                        {/* Header Title & Formal Structure Divided by Horizontal Rule in front */}
-                                        <div className="flex-1 flex flex-col justify-center min-w-0 z-10">
+                                        {/* Header Title & Formal Structure Divided by Horizontal Rule in front (z-10) overlapping the ghost numeral */}
+                                        <div
+                                          style={{
+                                            paddingLeft: `${tuning.sceneHeaderLeftOffset ?? 0}px`,
+                                          }}
+                                          className="w-full flex flex-col justify-center min-w-0 z-10 relative"
+                                        >
                                           {/* Above the line: Scene number & Title on left, Formal Voice (SUBJECT/ANSWER) on right */}
                                           <div
                                             style={{ paddingBottom: `${tuning.titleGap}px` }}
@@ -1764,6 +1865,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                   ghostYShift: -17,
                   ghostXShift: -12,
                   ghostOpacity: 0.8,
+                  sceneHeaderLeftOffset: 0,
                   ruleThickness: 1,
                   titleGap: 2,
                   openingIndent: 1.5,
@@ -1787,6 +1889,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                   ghostYShift: -12,
                   ghostXShift: -8,
                   ghostOpacity: 0.7,
+                  sceneHeaderLeftOffset: 0,
                   ruleThickness: 1,
                   titleGap: 1,
                   openingIndent: 1.0,
@@ -1810,6 +1913,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                   ghostYShift: -22,
                   ghostXShift: -14,
                   ghostOpacity: 0.85,
+                  sceneHeaderLeftOffset: 0,
                   ruleThickness: 1.5,
                   titleGap: 3,
                   openingIndent: 2.0,
@@ -2019,6 +2123,30 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                 </div>
               </div>
 
+              {/* Line & Scene Header Left Position */}
+              <div className="space-y-1">
+                <div className="flex justify-between items-center text-[11px]">
+                  <span className="text-zinc-300">Line & Scene Header Left Position</span>
+                  <span className="font-mono text-zinc-400 text-[10.5px]">
+                    {tuning.sceneHeaderLeftOffset ?? 0}px {(tuning.sceneHeaderLeftOffset ?? 0) === 0 ? "(flush left / overlap)" : ""}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={-20}
+                  max={80}
+                  step={1}
+                  value={tuning.sceneHeaderLeftOffset ?? 0}
+                  onChange={(e) => updateTuning({ sceneHeaderLeftOffset: Number(e.target.value) })}
+                  className="w-full accent-amber-500 h-1.5 bg-zinc-800 rounded-lg cursor-pointer"
+                />
+                <div className="flex justify-between text-[9px] text-zinc-500">
+                  <span>Pull closer to left (-20px)</span>
+                  <span>Overlap ghost (0px)</span>
+                  <span>Indented (80px)</span>
+                </div>
+              </div>
+
               {/* Ghost Horizontal Shift & Opacity */}
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
@@ -2028,8 +2156,8 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                   </div>
                   <input
                     type="range"
-                    min={-40}
-                    max={20}
+                    min={-60}
+                    max={60}
                     step={1}
                     value={tuning.ghostXShift}
                     onChange={(e) => updateTuning({ ghostXShift: Number(e.target.value) })}

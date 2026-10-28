@@ -43,7 +43,7 @@ interface TelemetryData {
 interface PersonaProfile {
   persona_id: string;
   name: string;
-  category: "literary_agent" | "prestige_editor" | "craft_agent" | "author_profile" | "specialist" | string;
+  category: "beta_reader" | "literary_agent" | "prestige_editor" | "craft_agent" | "author_profile" | "author_agent" | "specialist" | string;
   role: string;
   title_or_archetype: string;
   organization_or_imprint: string;
@@ -4176,6 +4176,7 @@ export default function LiteraryStudioWorkspace() {
                     className="rounded border border-slate-700 bg-slate-950 px-2 py-1 text-[10px] text-slate-300"
                   >
                     <option value="all">All ({personaRoster.length})</option>
+                    <option value="beta_reader">Beta reader avatars ({personaRoster.filter((persona) => persona.category === "beta_reader").length})</option>
                     <option value="literary_agent">Literary agents ({personaRoster.filter((persona) => persona.category === "literary_agent").length})</option>
                     <option value="prestige_editor">Prestige editors ({personaRoster.filter((persona) => persona.category === "prestige_editor").length})</option>
                     <option value="craft_agent">Craft agents ({personaRoster.filter((persona) => persona.category === "craft_agent").length})</option>
