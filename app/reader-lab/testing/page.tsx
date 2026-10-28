@@ -1,7 +1,8 @@
 "use client";
 import {useState} from "react";
 import Link from "next/link";
-import {CHECKPOINTS,MANUSCRIPT_COMMIT,makeBlindReaderPrompt,checkResponse,type BlindResponse} from "@/lib/reader-river/blind-protocol";
+import {CHECKPOINTS,makeBlindReaderPrompt,checkResponse,type BlindResponse} from "@/lib/reader-river/blind-protocol";
+import {MANUSCRIPT_COMMIT} from "@/lib/reader-river/part-one";
 export default function ReaderTestingPage(){
  const [selected,setSelected]=useState("5b");
  const [raw,setRaw]=useState("");
