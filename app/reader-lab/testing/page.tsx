@@ -26,6 +26,7 @@ export default function ReaderTestingPage(){
  return <main style={{maxWidth:900,margin:"auto",padding:"32px 20px",fontFamily:"system-ui, sans-serif",lineHeight:1.5}}>
   <nav><Link href="/reader-lab/part-one">← River map</Link></nav>
   <h1>Blind Reader Lab · Part One</h1>
+  <p><Link href="/reader-lab/evidence" style={{textDecoration:"underline"}}>View Reader 06/07 evidence ledger →</Link></p>
   <p>Create independent reader prompts and import responses. This manual tool does not invoke AI models or retrieve manuscript excerpts.</p>
   <p style={{border:"1px solid #b08a45",borderRadius:8,padding:12}}>Manuscript lock: <code>{MANUSCRIPT_COMMIT}</code>. Supply text separately and stop at the selected checkpoint. Keep editorial scores, future chapters and other readers' answers hidden from each reader agent.</p>
   <label htmlFor="checkpoint"><strong>Reading checkpoint</strong></label>
