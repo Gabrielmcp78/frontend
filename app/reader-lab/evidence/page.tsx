@@ -1,7 +1,7 @@
 "use client";
 import {useMemo,useState} from "react";
 import Link from "next/link";
-import {READER_EVIDENCE,EVIDENCE_COMMIT,type Elicitation,type FindingType} from "@/lib/reader-river/evidence-ledger";
+import {READER_EVIDENCE,EVIDENCE_COMMIT,type FindingType} from "@/lib/reader-river/evidence-ledger";
 export default function EvidenceLedgerPage(){
  const [reader,setReader]=useState("all");
  const [stage,setStage]=useState("all");

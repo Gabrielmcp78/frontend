@@ -64,7 +64,7 @@ const SemanticStyleExtension = Extension.create({
 interface TiptapEditorProps {
   initialContent?: string;
   documentLabel?: string;
-  onUpdate?: (content: string) => void;
+  onUpdate?: (content: string, documentJson?: Record<string, unknown>) => void;
   editorSettings?: EditorTypographySettings;
   onEditorSettingsChange?: (settings: EditorTypographySettings) => void;
   onAddAnnotation?: (anchor: AnnotationAnchor | null) => void;
@@ -420,12 +420,12 @@ export default function TiptapEditor({
       onParagraphChange?.(getParagraphIndex(createdEditor));
       const normalizedContent = createdEditor.getHTML();
       if (initialContent !== undefined && normalizedContent !== initialContent) {
-        onUpdate?.(normalizedContent);
+        onUpdate?.(normalizedContent, createdEditor.getJSON() as Record<string, unknown>);
       }
     },
     onUpdate: ({ editor: updatedEditor }) => {
       updateStats(updatedEditor);
-      onUpdate?.(updatedEditor.getHTML());
+      onUpdate?.(updatedEditor.getHTML(), updatedEditor.getJSON() as Record<string, unknown>);
     },
     onSelectionUpdate: ({ editor: updatedEditor }) => {
       onSelectionChange?.(getSelectionAnchor(updatedEditor));

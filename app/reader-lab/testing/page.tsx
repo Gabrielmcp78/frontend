@@ -28,7 +28,7 @@ export default function ReaderTestingPage(){
   <h1>Blind Reader Lab · Part One</h1>
   <p><Link href="/reader-lab/evidence" style={{textDecoration:"underline"}}>View Reader 06/07 evidence ledger →</Link></p>
   <p>Create independent reader prompts and import responses. This manual tool does not invoke AI models or retrieve manuscript excerpts.</p>
-  <p style={{border:"1px solid #b08a45",borderRadius:8,padding:12}}>Manuscript lock: <code>{MANUSCRIPT_COMMIT}</code>. Supply text separately and stop at the selected checkpoint. Keep editorial scores, future chapters and other readers' answers hidden from each reader agent.</p>
+  <p style={{border:"1px solid #b08a45",borderRadius:8,padding:12}}>Manuscript lock: <code>{MANUSCRIPT_COMMIT}</code>. Supply text separately and stop at the selected checkpoint. Keep editorial scores, future chapters and other readers&apos; answers hidden from each reader agent.</p>
   <label htmlFor="checkpoint"><strong>Reading checkpoint</strong></label>
   <select id="checkpoint" value={selected} onChange={e=>setSelected(e.target.value)} style={{display:"block",padding:9,maxWidth:"100%",margin:"8px 0 16px"}}>
    {CHECKPOINTS.map(c=><option key={c.id} value={c.id}>Ch {c.chapter} · {c.id}: {c.title}</option>)}
@@ -47,6 +47,6 @@ export default function ReaderTestingPage(){
   <p role="status">{notice}</p>
   <h2>Collected responses ({results.length})</h2>
   <ul>{results.map((r,i)=><li key={r.readerId+"-"+r.checkpointId}>{r.readerId} · {r.checkpointId} · {r.readerKind} <button onClick={()=>setResults(prev=>prev.filter((_,j)=>j!==i))}>Remove</button></li>)}</ul>
-  <p style={{fontSize:13,opacity:.75}}>Responses are held only in this page's memory until exported. Refreshing the browser clears them. Human reader observations and AI reader simulations must be analyzed separately.</p>
+  <p style={{fontSize:13,opacity:.75}}>Responses are held only in this page&apos;s memory until exported. Refreshing the browser clears them. Human reader observations and AI reader simulations must be analyzed separately.</p>
  </main>;
 }

@@ -39,6 +39,6 @@ export default function FrictionStudy(){
   <p role="status">{notice}</p>
   <h2>Collected responses</h2>
   {responses.length===0?<p>No reader responses imported yet.</p>:<ul>{responses.map((r,i)=><li key={r.readerId+"-"+r.windowId}>{r.readerId} · {r.windowId} · {r.model??r.readerKind} <button onClick={()=>setResponses(prev=>prev.filter((_,j)=>j!==i))}>Remove</button></li>)}</ul>}
-  <p style={{fontSize:13,opacity:.75}}>No API calls or permanent server storage. Browser refresh clears imported responses; export before leaving. This test cannot independently verify a reader's isolation or supplied files.</p>
+  <p style={{fontSize:13,opacity:.75}}>No API calls or permanent server storage. Browser refresh clears imported responses; export before leaving. This test cannot independently verify a reader&apos;s isolation or supplied files.</p>
  </main>;
 }

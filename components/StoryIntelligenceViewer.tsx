@@ -66,7 +66,7 @@ type TrackFilter = "all" | "key_object" | "character" | "location";
 
 function shortChapterLabel(chapter: StoryChapter): string {
   if (chapter.chapter_number !== null && chapter.chapter_number !== undefined) {
-    return chapter.chapter_number === 0 ? "Prologue" : `Ch. ${chapter.chapter_number}`;
+    return chapter.chapter_number === 0 ? "Epigraph" : `Ch. ${chapter.chapter_number}`;
   }
   return "Material";
 }

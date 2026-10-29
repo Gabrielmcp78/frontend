@@ -24,6 +24,8 @@ export const CANONICAL_PARTS_METADATA: Record<
     subtitle?: string;
     descriptor?: string;
     instrumentation?: string;
+    epigraph?: string;
+    epigraphAttribution?: string;
     movements?: string[];
   }
 > = {
@@ -48,14 +50,14 @@ export const CANONICAL_PARTS_METADATA: Record<
     descriptor: "A Secular Passion in Eight Movements",
     instrumentation: "for cello, viola, five annotating hands, and blizzard",
     movements: [
-      "I. Andante sostenuto, dolce e misurato",
-      "II. Andante cantabile, liberamente",
-      "III. Moderato, con moto; sempre più incalzando",
-      "IV. Tempo giusto, severo, senza affrettare",
-      "V. Mosso e inquieto, con passo irregolare",
-      "VI. Allegro molto, marcato, senza respiro",
-      "VII. Largo, sospeso, quasi senza tempo",
-      "VIII. Lento e spoglio, con ostinata resistenza",
+      "I. Chorale: Wednesday Dinner (Andante sostenuto)",
+      "II. Arioso: The Tuning (Adagio espressivo e misterioso)",
+      "III. Recitativum: Break-Through (Allegro con fuoco)",
+      "IV. Turba: The Guillotine (Moderato incisivo)",
+      "V. Via Dolorosa: Into the Storm (Mosso e inquieto, con passo irregolare)",
+      "VI. Crucifixio: It Takes a Beating (Allegro molto, marcato, senza respiro)",
+      "VII. Depositio / Sepultura: The Clear Snows of Fall (Largo, sospeso, quasi senza tempo)",
+      "VIII. Reliquiae: Up From the Depths (Grave, con moto interiore)",
     ],
   },
   4: {
@@ -63,7 +65,7 @@ export const CANONICAL_PARTS_METADATA: Record<
     title: "PART FOUR",
     subtitle: "Exercises in Humanity",
     descriptor: "A Suite for Quartet, with Walking Interstitials",
-    instrumentation: "for quartet, with walking interstitials",
+    instrumentation: "for quartet & interstitials",
   },
   5: {
     roman: "PART FIVE",
@@ -76,47 +78,268 @@ export const CANONICAL_PARTS_METADATA: Record<
     roman: "PART SIX",
     title: "PART SIX",
     subtitle: "Horizons",
+    descriptor: "Epigraph & Climax",
+    instrumentation: "for piano, quad, and attic window",
+    epigraph: "“In the grand theater of exploration...”",
+    epigraphAttribution: "—Dr. Kenji Tsukino",
+  },
+  7: {
+    roman: "PART SEVEN",
+    title: "PART SEVEN",
+    subtitle: "Fractional Currency & Symmetry of Violence",
+    descriptor: "Johann Sebastian Bach Cello Suite No. 1 in G Major BWV 1007, Sarabande",
+    instrumentation: "for solo cello, slate, and solar storm",
+  },
+  8: {
+    roman: "PART EIGHT",
+    title: "PART EIGHT",
+    subtitle: "Resonance & Phenom De Guare",
+    descriptor: "Global Network Broadcast",
+    instrumentation: "for global observatories, CERN, and ATLAS detector",
+  },
+  9: {
+    roman: "PART NINE",
+    title: "PART NINE",
+    subtitle: "Ratios of One",
+    descriptor: "Fugal Memory Room",
+    instrumentation: "for study, journal, and father",
+  },
+  10: {
+    roman: "PART TEN",
+    title: "PART TEN",
+    subtitle: "The Final Decision & Endless Possibilities",
+    descriptor: "Quantum Superposition / Collapse",
+    instrumentation: "for catwalk, score, envelope, and train",
+  },
+  11: {
+    roman: "PART ELEVEN",
+    title: "PART ELEVEN",
+    subtitle: "The Enduring Legacy & Elegy... For All",
+    descriptor: "Universal Harmonic Integration",
+    instrumentation: "for child, tuning fork, and East Hill chapel",
   },
   12: {
-    roman: "APPENDIX",
-    title: "APPENDIX",
+    roman: "APPENDICES",
+    title: "APPENDICES",
     subtitle: "Field Protocol #47 & Reference Compendium",
-    descriptor: "National Museum Installation & Reference Lexicon",
+    descriptor: "Operational Manual & Reference Compendium",
+    instrumentation: "for instruments scientific and musical",
   },
 };
+
 export const CANONICAL_CHAPTER_METADATA: Record<
   number,
   {
+    title?: string;
     subtitle?: string;
     defaultTempo?: string;
   }
 > = {
-  1: { defaultTempo: "Andante sostenuto" },
-  2: { defaultTempo: "Presto agitato" },
-  3: { defaultTempo: "Moderato, ma non troppo" },
-  4: { defaultTempo: "Andante con distanza" },
-  5: { defaultTempo: "Adagio, con malinconia" },
+  1: { title: "THE IVY LEAGUE", defaultTempo: "Andante sostenuto" },
+  2: { title: "THE LECTURE", defaultTempo: "Presto agitato" },
+  3: { title: "THE OFFICE", defaultTempo: "Moderato, ma non troppo" },
+  4: { title: "THE REHEARSAL", defaultTempo: "Andante con distanza" },
+  5: { title: "THE APARTMENT", defaultTempo: "Adagio, con malinconia" },
   6: {
-    subtitle: "Exposition",
+    title: "NOW THEN",
+    subtitle: "Fugue Architecture",
     defaultTempo: "Andante inquieto",
   },
   7: {
-    subtitle: "Development",
-    defaultTempo: "Andante con moto",
+    title: "ALTERATION FINDS",
+    subtitle: "Adagio misterioso",
+    defaultTempo: "Adagio misterioso",
   },
   8: {
-    subtitle: "Counter-Subject & Suppression",
-    defaultTempo: "Allegro agitato",
+    title: "THE FIREBIRDS",
+    subtitle: "Presto agitato",
+    defaultTempo: "Presto agitato",
   },
   9: {
-    subtitle: "Stretto & Recognition",
-    defaultTempo: "Largo sospeso",
+    title: "REMAINING RETURNS",
+    subtitle: "Andante con moto",
+    defaultTempo: "Andante con moto",
   },
   10: {
+    title: "PASSIONS’ PRINCIPLES",
     subtitle: "An Oratorio in Eight Movements",
+    defaultTempo: "Andante sostenuto",
   },
+  11: { title: "EXERCISE", subtitle: "Suite Architecture" },
+  12: { title: "HUMANITIES", subtitle: "Suite Architecture" },
+  13: { title: "TWIN PRIMES ON THE SIX", subtitle: "Chapter Architecture" },
   14: {
+    title: "VISIONS AND BURDENS OF KNOWING",
     subtitle: "A Liminal Symphony in Five Movements",
+  },
+  15: { title: "THE SOLAR MAXIMUM CONNECTION", subtitle: "Derivation" },
+  16: { title: "SKEPTICISM AND RIDICULE", subtitle: "Fall Architecture" },
+  17: { title: "TO GROUND", subtitle: "Burial Protocol" },
+  18: { title: "FRACTIONAL CURRENCY", subtitle: "Currency Architecture" },
+  19: { title: "THE SYMMETRY OF VIOLENCE", subtitle: "Sarabande Performance" },
+  20: { title: "RESONANCE", subtitle: "Global Reaction" },
+  21: { title: "PHENOM DE GUARE", subtitle: "Network Unification" },
+  22: { title: "RATIOS OF ONE", subtitle: "Memory Room Architecture" },
+  23: { title: "THE PIVOTAL ENCOUNTER", subtitle: "Encounter Architecture" },
+  24: { title: "THE FINAL DECISION", subtitle: "Final Decision Architecture" },
+  25: { title: "ENDLESS POSSIBILITIES", subtitle: "Superposition Architecture" },
+  26: { title: "THE ENDURING LEGACY", subtitle: "Legacy Architecture" },
+  27: { title: "ELEGY... FOR ALL", subtitle: "Elegy Architecture" },
+};
+
+export interface CanonicalSceneInfo {
+  title?: string;
+  formalStructure?: string;
+  location?: string;
+  time?: string;
+  tempo?: string;
+}
+
+export const CANONICAL_SCENE_METADATA: Record<string, CanonicalSceneInfo> = {
+  // Chapter 6: Fugue Architecture
+  "6.1": {
+    title: "SUBJECT",
+    formalStructure: "EXPOSITION / SUBJECT",
+    location: "En Route to Buffalo, NY",
+    time: "Present Day",
+    tempo: "Andante inquieto",
+  },
+  "6.2": {
+    title: "ANSWER",
+    formalStructure: "FUGAL ANSWER",
+    location: "MIT - Cambridge, MA",
+    time: "April 11, 2005",
+    tempo: "Allegro agitato",
+  },
+  "6.3": {
+    title: "SUBJECT",
+    formalStructure: "RE-EXPOSITION",
+    location: "Buffalo, NY",
+    time: "Present Day",
+    tempo: "Moderato risoluto",
+  },
+  "6.4": {
+    title: "ANSWER",
+    formalStructure: "COUNTER-SUBJECT",
+    location: "NYU - New York, NY",
+    time: "May 24, 2005",
+    tempo: "Allegro vivace",
+  },
+  // Chapter 7
+  "7.1": {
+    title: "THE INSTRUMENT SHOP",
+    formalStructure: "VARIATION I",
+    location: "Buffalo, NY",
+    time: "Present Day",
+    tempo: "Andante con moto",
+  },
+  "7.2": {
+    title: "THE WORKSHOP",
+    formalStructure: "VARIATION II",
+    location: "Buffalo, NY",
+    time: "Present Day",
+    tempo: "Andante con moto",
+  },
+  "7.3": {
+    title: "THE HOTEL ROOM",
+    formalStructure: "VARIATION III",
+    location: "Buffalo, NY",
+    time: "Present Day",
+    tempo: "Andante con moto",
+  },
+  // Chapter 8
+  "8.1": {
+    title: "SUPPRESSION",
+    formalStructure: "CLIMAX / EPISTEMICIDE",
+    location: "MIT - Boston, MA",
+    time: "May 24, 2005",
+    tempo: "Presto agitato",
+  },
+  // Chapter 9
+  "9.1": {
+    title: "AFTERSHOCK",
+    formalStructure: "AFTERMATH",
+    location: "Cornell — Ithaca, NY",
+    time: "Monday Night",
+    tempo: "Largo sospeso",
+  },
+  "9.2": {
+    title: "THE CLASSROOM",
+    formalStructure: "PEDAGOGY",
+    location: "Feynman Hall",
+    time: "Following Day",
+    tempo: "Andante con moto",
+  },
+  "9.3": {
+    title: "THE MESSAGE AND THE CORRIDOR",
+    formalStructure: "INTERLUDE",
+    location: "Physics Dept Corridor",
+    time: "Later That Day",
+    tempo: "Andante con moto",
+  },
+  "9.4": {
+    title: "RECOGNITION (CODA)",
+    formalStructure: "CODA",
+    location: "Arts Quad",
+    time: "Late Afternoon",
+    tempo: "Tempo ordinario",
+  },
+  // Chapter 10: Eight-Part Passion Architecture
+  "10.1": {
+    title: "CHORALE: Wednesday Dinner",
+    formalStructure: "CHORALE",
+    location: "Corner Booth Cafe",
+    time: "Wednesday Evening",
+    tempo: "Andante sostenuto",
+  },
+  "10.2": {
+    title: "ARIOSO: The Tuning",
+    formalStructure: "ARIOSO",
+    location: "Sage Chapel",
+    time: "Late Night",
+    tempo: "Adagio espressivo e misterioso",
+  },
+  "10.3": {
+    title: "RECITATIVUM: Break-Through",
+    formalStructure: "RECITATIVUM",
+    location: "David's Office",
+    time: "Following Day",
+    tempo: "Allegro con fuoco",
+  },
+  "10.4": {
+    title: "TURBA: The Guillotine",
+    formalStructure: "TURBA",
+    location: "Rune's Office",
+    time: "5:30 PM",
+    tempo: "Moderato incisivo",
+  },
+  "10.5": {
+    title: "VIA DOLOROSA: Into the Storm",
+    formalStructure: "VIA DOLOROSA",
+    location: "Faculty Parking Lot",
+    time: "Blizzard Night",
+    tempo: "Mosso e inquieto, con passo irregolare",
+  },
+  "10.6": {
+    title: "CRUCIFIXIO: It Takes a Beating",
+    formalStructure: "CRUCIFIXIO",
+    location: "Parking Lot Slush",
+    time: "Blizzard Night",
+    tempo: "Allegro molto, marcato, senza respiro",
+  },
+  "10.7": {
+    title: "DEPOSITIO / SEPULTURA",
+    formalStructure: "DEPOSITIO",
+    location: "Faculty Parking Lot",
+    time: "Blizzard Night",
+    tempo: "Largo, sospeso, quasi senza tempo",
+  },
+  "10.8": {
+    title: "RELIQUIAE: Up From the Depths",
+    formalStructure: "RELIQUIAE",
+    location: "East Hill Climb / Apartment",
+    time: "Night",
+    tempo: "Grave, con moto interiore",
   },
 };
 
@@ -147,10 +370,10 @@ export const CANONICAL_SCENE_TEMPOS: Record<string, string> = {
   "10.2": "Adagio espressivo e misterioso",
   "10.3": "Allegro con fuoco",
   "10.4": "Moderato incisivo",
-  "10.5": "Presto agitato",
-  "10.6": "Tempo ordinario, pesante",
+  "10.5": "Mosso e inquieto, con passo irregolare",
+  "10.6": "Allegro molto, marcato, senza respiro",
   "10.7": "Largo, sospeso, quasi senza tempo",
-  "10.8": "Lento e spoglio, con ostinata resistenza",
+  "10.8": "Grave, con moto interiore",
   "14.1": "Adagio misterioso",
   "14.2": "Andante con grazia e logica",
   "14.3": "Presto distruttivo",
@@ -159,10 +382,23 @@ export const CANONICAL_SCENE_TEMPOS: Record<string, string> = {
 };
 
 export const CANONICAL_SCENE_TITLES: Record<string, string> = {
-  "6.1": "TRAVEL",
-  "6.2": "CONSENSUS",
-  "6.3": "THE EXHIBITOR HALL",
-  "6.4": "PROJECTION",
+  "6.1": "SUBJECT",
+  "6.2": "ANSWER",
+  "6.3": "SUBJECT",
+  "6.4": "ANSWER",
+  "7.1": "THE INSTRUMENT SHOP",
+  "7.2": "THE WORKSHOP",
+  "7.3": "THE HOTEL ROOM",
+  "8.1": "SUPPRESSION",
+  "9.1": "AFTERSHOCK",
+  "10.1": "CHORALE: Wednesday Dinner",
+  "10.2": "ARIOSO: The Tuning",
+  "10.3": "RECITATIVUM: Break-Through",
+  "10.4": "TURBA: The Guillotine",
+  "10.5": "VIA DOLOROSA: Into the Storm",
+  "10.6": "CRUCIFIXIO: It Takes a Beating",
+  "10.7": "DEPOSITIO / SEPULTURA",
+  "10.8": "RELIQUIAE: Up From the Depths",
 };
 
 function cleanTex(raw: string): string {
@@ -272,7 +508,7 @@ function isDatelineParagraph(html: string): boolean {
 function applyTypesetToProse(
   pHtml: string,
   isFirstSceneOfChapter: boolean,
-  openingIndentInches: number = 1.5
+  openingIndentInches: number = 0
 ): string {
   const m = pHtml.match(/^(\s*<p[^>]*>)([\s\S]*?)(<\/p>)$/i);
   if (!m) return pHtml;
@@ -286,28 +522,24 @@ function applyTypesetToProse(
     .replace(/&(?:ensp|emsp);/gi, " ")
     .replace(/&amp;/gi, "&");
 
-  // Dynamic indent for each chapter opening line (replacing the drop cap)
-  if (isFirstSceneOfChapter) {
-    if (pOpen.includes('style="')) {
-      pOpen = pOpen.replace(
-        'style="',
-        `style="text-indent: var(--typeset-opening-indent, ${openingIndentInches}in) !important; `
-      );
-    } else if (pOpen.includes("style='")) {
-      pOpen = pOpen.replace(
-        "style='",
-        `style='text-indent: var(--typeset-opening-indent, ${openingIndentInches}in) !important; `
-      );
-    } else {
-      pOpen = pOpen.replace(
-        "<p",
-        `<p style="text-indent: var(--typeset-opening-indent, ${openingIndentInches}in) !important;"`
-      );
-    }
+  // Per STRING_THEORIES_TYPESETTING_SPECIFICATION.csv:
+  // "First Body Paragraph: Serif Regular, 11pt, First Line No Indent + Drop Cap (3 lines tall)"
+  const indentStyle =
+    isFirstSceneOfChapter || openingIndentInches === 0
+      ? "text-indent: 0 !important; "
+      : `text-indent: ${openingIndentInches}in !important; `;
+
+  if (pOpen.includes('style="')) {
+    pOpen = pOpen.replace('style="', `style="${indentStyle}`);
+  } else if (pOpen.includes("style='")) {
+    pOpen = pOpen.replace("style='", `style='${indentStyle}`);
+  } else {
+    pOpen = pOpen.replace("<p", `<p style="${indentStyle.trim()}"`);
   }
 
   const tokens = pInner.match(/(<[^>]+>)|([^<]+)/g) || [pInner];
   let wordCount = 0;
+  let dropCapCreated = false;
   let newInner = "";
 
   for (let i = 0; i < tokens.length; i++) {
@@ -317,7 +549,7 @@ function applyTypesetToProse(
       continue;
     }
 
-    if (wordCount >= 4) {
+    if (wordCount >= 4 && (!isFirstSceneOfChapter || dropCapCreated)) {
       newInner += tok;
       continue;
     }
@@ -330,6 +562,22 @@ function applyTypesetToProse(
       if (/^\s+$/.test(seg) || !seg.trim()) {
         transformedText += seg;
         continue;
+      }
+
+      if (wordCount === 0 && isFirstSceneOfChapter && !dropCapCreated) {
+        // Extract opening quote + first letter (or just first letter) for 3-line tall Drop Cap
+        const match = seg.match(/^([^a-zA-Z0-9]*[a-zA-Z0-9])(.*)$/);
+        if (match) {
+          const dropChar = match[1];
+          const remainder = match[2];
+          dropCapCreated = true;
+          wordCount++;
+          transformedText += `<span class="typeset-drop-cap font-serif float-left text-[3.25em] leading-[0.8] pr-2.5 pt-1 font-bold text-[#1a1715] select-text">${dropChar}</span>`;
+          if (remainder) {
+            transformedText += `<span class="typeset-lead-caps font-serif font-semibold tracking-[0.16em] text-[12.5px] uppercase">${remainder.toUpperCase()}</span>`;
+          }
+          continue;
+        }
       }
 
       if (wordCount < 4) {
@@ -437,7 +685,7 @@ function tokenizeTopLevelBlocks(html: string): string[] {
       if (openMatch) {
         const tagName = openMatch[1].toLowerCase();
         let depth = 1;
-        let j = i + openMatch[0].length;
+        const j = i + openMatch[0].length;
 
         const tagRegex = new RegExp("</?" + tagName + "(\\s[^>]*)?>", "gi");
         tagRegex.lastIndex = j;
@@ -671,6 +919,27 @@ function processSceneContent(
     break;
   }
 
+  // Fallback to canonical scene metadata from official specification if not authored
+  const canonicalMeta = coord ? CANONICAL_SCENE_METADATA[coord] : undefined;
+  if (canonicalMeta) {
+    if (!cleanTitle || cleanTitle.toUpperCase() === formalStructure) {
+      cleanTitle = canonicalMeta.title || cleanTitle;
+    }
+    if (!formalStructure) {
+      formalStructure = canonicalMeta.formalStructure || null;
+    }
+    if (!dateline) {
+      if (canonicalMeta.location && canonicalMeta.time) {
+        dateline = `${canonicalMeta.location} · ${canonicalMeta.time}`;
+      } else {
+        dateline = canonicalMeta.location || canonicalMeta.time || null;
+      }
+    }
+    if (!tempoMarking) {
+      tempoMarking = canonicalMeta.tempo || null;
+    }
+  }
+
   // Fallback to canonical scene title if cleanTitle is still empty or redundant with formal structure
   if (
     (!cleanTitle || cleanTitle.toUpperCase() === formalStructure) &&
@@ -717,7 +986,6 @@ function processSceneContent(
   const postMathBlocks = tokenizeTopLevelBlocks(processedWithMath);
 
   // Typeset first true prose paragraph (skip non-prose and all semantic styles)
-  let proseFound = false;
   for (let i = 0; i < postMathBlocks.length; i++) {
     const blk = postMathBlocks[i];
     if (
@@ -727,7 +995,6 @@ function processSceneContent(
       )
     ) {
       postMathBlocks[i] = applyTypesetToProse(blk, isFirstSceneOfChapter, openingIndentInches);
-      proseFound = true;
       break;
     }
   }
@@ -916,10 +1183,13 @@ interface LiveTypesetPreviewProps {
   formatProfileId: string;
   onFormatProfileChange: (profileId: string) => void;
   pdfUrl?: string | null;
-  onCompilePdf?: () => void;
+  onCompilePdf?: (scope?: PreviewScope) => void;
   isCompilingPdf?: boolean;
   onExportArtifact?: (format: "pdf" | "docx" | "markdown", scope: PreviewScope) => void;
+  onTuningChange?: (tuning: LayoutTuningParams) => void;
   isExportingArtifact?: boolean;
+  scope?: PreviewScope;
+  onScopeChange?: (scope: PreviewScope) => void;
 }
 
 export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
@@ -933,20 +1203,65 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
   onCompilePdf,
   isCompilingPdf = false,
   onExportArtifact,
+  onTuningChange,
   isExportingArtifact = false,
+  scope: propScope,
+  onScopeChange,
 }) => {
-  const [scope, setScope] = useState<PreviewScope>("chapter");
-  const [renderMode, setRenderMode] = useState<"visual" | "pdf">("visual");
+  const [internalScope, setInternalScope] = useState<PreviewScope>("chapter");
+  const scope = propScope ?? internalScope;
+  const [renderMode, setRenderMode] = useState<"visual" | "pdf">("pdf");
   const [showTuner, setShowTuner] = useState<boolean>(false);
   const [selectedTarget, setSelectedTarget] = useState<StyleTarget>("all");
   const [copiedTuning, setCopiedTuning] = useState<boolean>(false);
+
+  const compileDebounceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const debouncedCompilePdf = React.useCallback(
+    (targetScope: PreviewScope = scope, delayMs: number = 600) => {
+      if (compileDebounceTimerRef.current) {
+        clearTimeout(compileDebounceTimerRef.current);
+      }
+      compileDebounceTimerRef.current = setTimeout(() => {
+        if (onCompilePdf) {
+          onCompilePdf(targetScope);
+        }
+      }, delayMs);
+    },
+    [onCompilePdf, scope]
+  );
+
+  React.useEffect(() => {
+    return () => {
+      if (compileDebounceTimerRef.current) {
+        clearTimeout(compileDebounceTimerRef.current);
+      }
+    };
+  }, []);
+
+  const setScope = React.useCallback(
+    (newScope: PreviewScope) => {
+      setInternalScope(newScope);
+      onScopeChange?.(newScope);
+      if (renderMode === "pdf") {
+        debouncedCompilePdf(newScope, 200);
+      }
+    },
+    [onScopeChange, renderMode, debouncedCompilePdf]
+  );
+
+  React.useEffect(() => {
+    if (renderMode === "pdf" && !pdfUrl && !isCompilingPdf && onCompilePdf) {
+      onCompilePdf(scope);
+    }
+  }, [renderMode, pdfUrl, isCompilingPdf, onCompilePdf, scope]);
 
   const [tuning, setTuning] = useState<LayoutTuningParams>(() => {
     if (typeof window !== "undefined") {
       try {
         const saved = localStorage.getItem("string_theories_typeset_tuning");
         if (saved) return { ...DEFAULT_LAYOUT_TUNING, ...JSON.parse(saved) };
-      } catch (e) {
+      } catch {
         /* ignore */
       }
     }
@@ -967,9 +1282,13 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
       if (typeof window !== "undefined") {
         try {
           localStorage.setItem("string_theories_typeset_tuning", JSON.stringify(updated));
-        } catch (e) {
+        } catch {
           /* ignore */
         }
+      }
+      onTuningChange?.(updated);
+      if (renderMode === "pdf") {
+        debouncedCompilePdf(scope, 600);
       }
       return updated;
     });
@@ -980,9 +1299,13 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
     if (typeof window !== "undefined") {
       try {
         localStorage.removeItem("string_theories_typeset_tuning");
-      } catch (e) {
+      } catch {
         /* ignore */
       }
+    }
+    onTuningChange?.(DEFAULT_LAYOUT_TUNING);
+    if (renderMode === "pdf") {
+      debouncedCompilePdf(scope, 300);
     }
   };
 
@@ -1086,10 +1409,10 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
       part.chapters.get(chapterKey)!.scenes.push(scene);
     }
 
-    return Array.from(partsMap.entries()).map(([_, partData]) => ({
+    return Array.from(partsMap.entries()).map(([, partData]) => ({
       partTitle: partData.partTitle,
       partNum: partData.partNum,
-      chapters: Array.from(partData.chapters.entries()).map(([_, chapterData]) => ({
+      chapters: Array.from(partData.chapters.entries()).map(([, chapterData]) => ({
         chapterTitle: chapterData.chapterTitle,
         cleanTitle: chapterData.cleanTitle,
         chapterNum: chapterData.chapterNum,
@@ -1177,29 +1500,32 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
           <div className="mac-segmented-control">
             <button
               type="button"
-              onClick={() => setRenderMode("visual")}
-              className={`mac-segmented-item ${renderMode === "visual" ? "active" : ""}`}
+              onClick={() => {
+                setRenderMode("pdf");
+                if (!pdfUrl && onCompilePdf) onCompilePdf(scope);
+              }}
+              className={`mac-segmented-item ${renderMode === "pdf" ? "active" : ""}`}
+              title="Authoritative XeLaTeX Compiled PDF (100% WYSIWYG Parity with Export)"
             >
-              Instant Typeset
+              Compiled PDF (WYSIWYG)
             </button>
             <button
               type="button"
-              onClick={() => {
-                setRenderMode("pdf");
-                if (!pdfUrl && onCompilePdf) onCompilePdf();
-              }}
-              className={`mac-segmented-item ${renderMode === "pdf" ? "active" : ""}`}
+              onClick={() => setRenderMode("visual")}
+              className={`mac-segmented-item ${renderMode === "visual" ? "active" : ""}`}
+              title="Draft Design / Fast Flow Continuous Typeset View"
             >
-              Compiled PDF
+              Draft Design / Fast Flow
             </button>
           </div>
 
           {renderMode === "pdf" && onCompilePdf && (
             <button
               type="button"
-              onClick={onCompilePdf}
+              onClick={() => onCompilePdf(scope)}
               disabled={isCompilingPdf}
-              className="text-xs px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-medium disabled:opacity-50 flex items-center gap-1 transition-all"
+              className="text-xs px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-medium disabled:opacity-50 flex items-center gap-1 transition-all shadow-sm"
+              title="Recompile LaTeX PDF with latest manuscript and layout tuning"
             >
               {isCompilingPdf ? "Compiling…" : "Refresh PDF"}
             </button>
@@ -1261,15 +1587,51 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
         <div className="flex-1 overflow-x-auto overflow-y-auto p-4 sm:p-8 bg-zinc-950 min-w-0 flex items-start justify-center">
         {renderMode === "pdf" ? (
           pdfUrl ? (
-            <iframe
-              src={pdfUrl}
-              title="Compiled LaTeX PDF Preview"
-              className="w-full h-full min-h-[75vh] rounded-lg shadow-2xl border border-zinc-800 bg-white"
-            />
+            <div className="relative w-full h-full min-h-[75vh] flex flex-col items-center">
+              <iframe
+                src={pdfUrl}
+                title="Compiled LaTeX PDF Preview"
+                className="w-full h-full min-h-[75vh] rounded-lg shadow-2xl border border-zinc-800 bg-white"
+              />
+              {isCompilingPdf && (
+                <div className="absolute top-4 right-4 bg-zinc-900/90 backdrop-blur border border-indigo-500/50 text-indigo-200 text-xs px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg animate-pulse z-10 pointer-events-none">
+                  <span className="w-3 h-3 rounded-full border-2 border-indigo-400 border-t-transparent animate-spin" />
+                  <span>Updating PDF preview…</span>
+                </div>
+              )}
+            </div>
           ) : (
-            <div className="flex flex-col items-center justify-center p-12 text-center text-zinc-400 gap-3">
-              <span className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
-              <p className="text-xs">Compiling real-time LaTeX PDF for selected scope…</p>
+            <div className="flex flex-col items-center justify-center p-12 text-center text-zinc-400 gap-4 my-auto">
+              {isCompilingPdf ? (
+                <>
+                  <span className="w-8 h-8 rounded-full border-2 border-indigo-500 border-t-transparent animate-spin" />
+                  <p className="text-xs">Compiling real-time LaTeX PDF for {scope} scope…</p>
+                </>
+              ) : (
+                <>
+                  <div className="w-12 h-12 rounded-full bg-indigo-950/60 border border-indigo-700/50 flex items-center justify-center text-xl">
+                    📄
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-zinc-200">
+                      Authoritative Typeset Preview
+                    </p>
+                    <p className="text-xs text-zinc-400 max-w-sm">
+                      Compiled directly via XeLaTeX for 100% WYSIWYG export fidelity.
+                    </p>
+                  </div>
+                  {onCompilePdf && (
+                    <button
+                      type="button"
+                      onClick={() => onCompilePdf(scope)}
+                      className="text-xs px-3.5 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white font-medium shadow-md transition-all flex items-center gap-1.5 mt-2"
+                    >
+                      <span>⚡</span>
+                      <span>Compile {scope.toUpperCase()} PDF</span>
+                    </button>
+                  )}
+                </>
+              )}
             </div>
           )
         ) : (
@@ -1425,24 +1787,36 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                     <div key={pIdx} className="space-y-14">
                       {/* ================= PART COVER PAGE ================= */}
                       {(scope === "part" || scope === "full") && (partMeta || partTitle) && (
-                        <div className="pt-24 pb-20 px-4 text-center border-b border-stone-300 space-y-5">
-                          <p className="text-xs font-serif font-bold uppercase tracking-[0.3em] text-[#8b3a2b]">
+                        <div className="pt-[72pt] pb-20 px-4 text-center border-b border-stone-300 space-y-6">
+                          <p className="text-[24pt] font-serif font-bold uppercase tracking-[0.25em] text-[#8b3a2b] leading-tight">
                             {partMeta?.roman || (partNum !== null ? `PART ${partNum}` : partTitle)}
                           </p>
-                          <h2 className="text-2xl sm:text-3xl font-serif italic text-zinc-950 font-normal">
+                          <h2 className="text-[18pt] font-serif italic text-zinc-950 font-normal mt-[24pt]">
                             {partMeta?.subtitle || partTitle}
                           </h2>
                           {partMeta?.descriptor && (
-                            <p className="text-xs font-serif italic text-zinc-600">
+                            <p className="text-[12pt] font-serif italic text-zinc-700 mt-[12pt]">
                               {partMeta.descriptor}
                             </p>
                           )}
 
                           {/* Part Instrumentation */}
                           {partMeta?.instrumentation && (
-                            <p className="text-xs font-serif italic text-zinc-700 pt-1">
+                            <p className="text-[10.5pt] font-serif italic text-[#404040] mt-[6pt] mb-[48pt]">
                               {partMeta.instrumentation}
                             </p>
+                          )}
+
+                          {/* Part Epigraph / Quote */}
+                          {partMeta?.epigraph && (
+                            <blockquote className="mx-auto max-w-[85%] px-8 my-[36pt] text-center font-serif italic text-[10pt] text-[#2c2825] border-none">
+                              <p className="mb-2 !indent-0">{partMeta.epigraph}</p>
+                              {partMeta.epigraphAttribution && (
+                                <cite className="not-italic font-semibold text-xs text-stone-600 block !indent-0">
+                                  {partMeta.epigraphAttribution}
+                                </cite>
+                              )}
+                            </blockquote>
                           )}
 
                           {/* Center Divider Rule */}
@@ -1533,7 +1907,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                     fontSize: `${tuning.chapterTitleSize}px`,
                                     letterSpacing: `${tuning.chapterTitleTracking}em`,
                                   }}
-                                  className={`font-serif font-semibold uppercase text-[#1a1715] select-none ${getTargetOutline(
+                                  className={`font-serif font-bold italic uppercase text-[#1a1715] select-none mt-[6pt] ${getTargetOutline(
                                     "chapter-title"
                                   )}`}
                                   title={showTuner ? "Click to tune Chapter Title style" : undefined}
@@ -1551,7 +1925,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                       }
                                     }}
                                     style={{ fontSize: `${tuning.chapterSubtitleSize}px` }}
-                                    className={`font-serif italic text-zinc-700 pt-1 select-none ${getTargetOutline(
+                                    className={`font-serif italic text-[#404040] mt-[6pt] mb-[24pt] select-none ${getTargetOutline(
                                       "chapter-subtitle"
                                     )}`}
                                     title={showTuner ? "Click to tune Chapter Subtitle style" : undefined}
@@ -1639,7 +2013,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                             <div className="flex items-baseline gap-2 leading-none min-w-0">
                                               <span
                                                 style={{ fontSize: `${tuning.sceneNumSize}px` }}
-                                                className="font-serif font-semibold tracking-[0.18em] text-[#1a1715] leading-none shrink-0"
+                                                className="font-sans font-bold text-[11pt] tracking-tight text-[#1a1715] leading-none shrink-0"
                                               >
                                                 {finalCoord}
                                               </span>
@@ -1649,7 +2023,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                                     fontSize: `${tuning.titleSize}px`,
                                                     letterSpacing: `${tuning.titleTracking}em`,
                                                   }}
-                                                  className="font-serif font-semibold uppercase text-[#1a1715] leading-none truncate"
+                                                  className="font-serif font-semibold italic uppercase text-[#1a1715] leading-none truncate tracking-[0.12em]"
                                                 >
                                                   {sceneTitleText}
                                                 </span>
@@ -1661,7 +2035,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                                   fontSize: `${tuning.formalSize}px`,
                                                   letterSpacing: `${tuning.formalTracking}em`,
                                                 }}
-                                                className="font-serif font-semibold uppercase text-[#1a1715] shrink-0 leading-none"
+                                                className="font-serif italic font-medium text-[#2F5496] shrink-0 leading-none tracking-wide"
                                               >
                                                 {formalStructure}
                                               </span>
@@ -1679,7 +2053,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                             {sceneTempo ? (
                                               <span
                                                 style={{ fontSize: `${tuning.tempoSize}px` }}
-                                                className="italic font-serif text-[#4a423d] truncate leading-tight"
+                                                className="italic font-serif text-[#404040] truncate leading-tight"
                                               >
                                                 {sceneTempo}
                                               </span>
@@ -1687,7 +2061,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                               <span />
                                             )}
                                             {sceneDateline ? (
-                                              <span className="italic font-serif text-[11px] text-zinc-500 shrink-0 leading-tight">
+                                              <span className="font-sans font-light italic text-[9.5pt] text-[#595959] shrink-0 leading-tight">
                                                 {sceneDateline}
                                               </span>
                                             ) : (
@@ -1708,7 +2082,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                           }
                                         }}
                                         style={{ fontSize: `${tuning.tempoSize}px` }}
-                                        className={`text-center italic text-[#8b3a2b] font-serif tracking-wider py-2 -mt-4 mb-6 select-none ${getTargetOutline(
+                                        className={`text-center italic text-[#404040] font-serif tracking-wider py-2 -mt-4 mb-6 select-none ${getTargetOutline(
                                           "scene-header"
                                         )}`}
                                         title={showTuner ? "Click to tune Tempo Marking style" : undefined}
@@ -1728,7 +2102,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                     }}
                                     className={`typeset-prose-body prose prose-base max-w-none text-[#2d2926] leading-relaxed text-justify font-serif space-y-0 ${getTargetOutline(
                                       "prose"
-                                    )} [&>p]:indent-6 [&>p:first-of-type]:indent-0 [&_[data-semantic-style='block-1']]:ml-8 [&_[data-semantic-style='block-1']]:indent-0 [&_[data-semantic-style='block-2']]:ml-14 [&_[data-semantic-style='block-2']]:indent-0 [&_[data-semantic-style='stage-direction']]:italic [&_[data-semantic-style='stage-direction']]:text-stone-600 [&_[data-semantic-style='stage-direction']]:ml-8 [&_[data-semantic-style='stage-direction']]:indent-0 [&_[data-semantic-style='interior-italic-1']]:italic [&_[data-semantic-style='interior-italic-1']]:ml-8 [&_[data-semantic-style='interior-italic-1']]:indent-0 [&_[data-semantic-style='interior-italic-2']]:italic [&_[data-semantic-style='interior-italic-2']]:ml-14 [&_[data-semantic-style='interior-italic-2']]:indent-0 [&_[data-semantic-style='epigraph']]:text-center [&_[data-semantic-style='epigraph']]:italic [&_[data-semantic-style='epigraph']]:my-4 [&_[data-semantic-style='epigraph']]:indent-0 [&_[data-semantic-style='instrumentation']]:text-center [&_[data-semantic-style='instrumentation']]:italic [&_[data-semantic-style='instrumentation']]:text-xs [&_[data-semantic-style='instrumentation']]:text-stone-600 [&_[data-semantic-style='instrumentation']]:indent-0 [&_[data-semantic-style='tempo-marking']]:text-center [&_[data-semantic-style='tempo-marking']]:italic [&_[data-semantic-style='tempo-marking']]:text-[#8b3a2b] [&_[data-semantic-style='tempo-marking']]:text-xs [&_[data-semantic-style='tempo-marking']]:my-3 [&_[data-semantic-style='tempo-marking']]:indent-0 [&_[data-semantic-style='dateline']]:text-right [&_[data-semantic-style='dateline']]:text-xs [&_[data-semantic-style='dateline']]:text-stone-500 [&_[data-semantic-style='dateline']]:indent-0 [&_[data-semantic-style='location']]:italic [&_[data-semantic-style='location']]:text-xs [&_[data-semantic-style='location']]:text-stone-600 [&_[data-semantic-style='location']]:indent-0 [&_[data-semantic-style='scene-title']]:text-xs [&_[data-semantic-style='scene-title']]:font-semibold [&_[data-semantic-style='scene-title']]:uppercase [&_[data-semantic-style='scene-title']]:tracking-[0.18em] [&_[data-semantic-style='scene-title']]:indent-0 [&_[data-semantic-style='music-formal-1']]:text-center [&_[data-semantic-style='music-formal-1']]:italic [&_[data-semantic-style='music-formal-1']]:text-[#8b3a2b] [&_[data-semantic-style='music-formal-1']]:text-xs [&_[data-semantic-style='music-formal-1']]:my-2 [&_[data-semantic-style='music-formal-1']]:indent-0 [&_[data-semantic-style='music-formal-2']]:text-center [&_[data-semantic-style='music-formal-2']]:italic [&_[data-semantic-style='music-formal-2']]:text-stone-600 [&_[data-semantic-style='music-formal-2']]:text-xs [&_[data-semantic-style='music-formal-2']]:my-1 [&_[data-semantic-style='music-formal-2']]:indent-0 [&_[data-semantic-style='movement']]:italic [&_[data-semantic-style='movement']]:text-xs [&_[data-semantic-style='movement']]:text-stone-700 [&_[data-semantic-style='movement']]:my-1 [&_[data-semantic-style='movement']]:indent-0 [&_[data-semantic-style='scene-secondary']]:italic [&_[data-semantic-style='scene-secondary']]:text-xs [&_[data-semantic-style='scene-secondary']]:text-stone-600 [&_[data-semantic-style='scene-secondary']]:my-1 [&_[data-semantic-style='scene-secondary']]:indent-0 [&_blockquote]:border-l-0 [&_blockquote]:italic [&_blockquote]:text-center [&_blockquote]:my-5 [&_blockquote]:text-stone-700 [&_blockquote>p]:indent-0 [&_.typeset-math-display]:my-4 [&_.typeset-math-display]:text-center [&_.typeset-math-display]:indent-0 [&_.typeset-math-display]:text-stone-900`}
+                                    )} [&>p]:indent-6 [&>p:first-of-type]:indent-0 [&_[data-semantic-style='block-1']]:ml-8 [&_[data-semantic-style='block-1']]:indent-0 [&_[data-semantic-style='block-2']]:ml-14 [&_[data-semantic-style='block-2']]:indent-0 [&_[data-semantic-style='stage-direction']]:italic [&_[data-semantic-style='stage-direction']]:text-[#595959] [&_[data-semantic-style='stage-direction']]:ml-8 [&_[data-semantic-style='stage-direction']]:indent-0 [&_[data-semantic-style='interior-italic-1']]:italic [&_[data-semantic-style='interior-italic-1']]:ml-8 [&_[data-semantic-style='interior-italic-1']]:indent-0 [&_[data-semantic-style='interior-italic-2']]:italic [&_[data-semantic-style='interior-italic-2']]:ml-14 [&_[data-semantic-style='interior-italic-2']]:indent-0 [&_[data-semantic-style='epigraph']]:text-center [&_[data-semantic-style='epigraph']]:italic [&_[data-semantic-style='epigraph']]:my-4 [&_[data-semantic-style='epigraph']]:indent-0 [&_[data-semantic-style='instrumentation']]:text-center [&_[data-semantic-style='instrumentation']]:italic [&_[data-semantic-style='instrumentation']]:text-xs [&_[data-semantic-style='instrumentation']]:text-[#404040] [&_[data-semantic-style='instrumentation']]:indent-0 [&_[data-semantic-style='tempo-marking']]:text-center [&_[data-semantic-style='tempo-marking']]:italic [&_[data-semantic-style='tempo-marking']]:text-[#404040] [&_[data-semantic-style='tempo-marking']]:text-xs [&_[data-semantic-style='tempo-marking']]:my-3 [&_[data-semantic-style='tempo-marking']]:indent-0 [&_[data-semantic-style='dateline']]:text-right [&_[data-semantic-style='dateline']]:text-xs [&_[data-semantic-style='dateline']]:text-[#595959] [&_[data-semantic-style='dateline']]:indent-0 [&_[data-semantic-style='location']]:italic [&_[data-semantic-style='location']]:text-xs [&_[data-semantic-style='location']]:text-[#595959] [&_[data-semantic-style='location']]:indent-0 [&_[data-semantic-style='scene-title']]:text-xs [&_[data-semantic-style='scene-title']]:font-semibold [&_[data-semantic-style='scene-title']]:uppercase [&_[data-semantic-style='scene-title']]:tracking-[0.18em] [&_[data-semantic-style='scene-title']]:indent-0 [&_[data-semantic-style='music-formal-1']]:text-center [&_[data-semantic-style='music-formal-1']]:italic [&_[data-semantic-style='music-formal-1']]:text-[#2F5496] [&_[data-semantic-style='music-formal-1']]:text-xs [&_[data-semantic-style='music-formal-1']]:my-2 [&_[data-semantic-style='music-formal-1']]:indent-0 [&_[data-semantic-style='music-formal-2']]:text-center [&_[data-semantic-style='music-formal-2']]:italic [&_[data-semantic-style='music-formal-2']]:text-[#404040] [&_[data-semantic-style='music-formal-2']]:text-xs [&_[data-semantic-style='music-formal-2']]:my-1 [&_[data-semantic-style='music-formal-2']]:indent-0 [&_[data-semantic-style='movement']]:italic [&_[data-semantic-style='movement']]:text-xs [&_[data-semantic-style='movement']]:text-[#2F5496] [&_[data-semantic-style='movement']]:my-1 [&_[data-semantic-style='movement']]:indent-0 [&_[data-semantic-style='scene-secondary']]:italic [&_[data-semantic-style='scene-secondary']]:text-xs [&_[data-semantic-style='scene-secondary']]:text-stone-600 [&_[data-semantic-style='scene-secondary']]:my-1 [&_[data-semantic-style='scene-secondary']]:indent-0 [&_blockquote]:border-l-0 [&_blockquote]:italic [&_blockquote]:text-center [&_blockquote]:my-5 [&_blockquote]:text-stone-700 [&_blockquote>p]:indent-0 [&_.typeset-math-display]:my-4 [&_.typeset-math-display]:text-center [&_.typeset-math-display]:indent-0 [&_.typeset-math-display]:text-stone-900`}
                                     title={showTuner ? "Click to tune Prose & Opening Indent style" : undefined}
                                     dangerouslySetInnerHTML={{
                                       __html: formattedProseHtml,

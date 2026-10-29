@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
-import { CALIBRATION_BEATS, MANUSCRIPT_COMMIT, riverProperties } from "@/lib/reader-river/part-one";
-import type { CalibrationBeat } from "@/lib/reader-river/part-one";
+import { CALIBRATION_BEATS, MANUSCRIPT_COMMIT } from "@/lib/reader-river/part-one";
 import Link from "next/link";
 
 const PAD=56, WIDTH=850, STEP=74, HEIGHT=1120;

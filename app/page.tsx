@@ -26,6 +26,8 @@ const DraftSideWorkspace = dynamic(
 );
 import { WindowChrome } from "@/components/mac/WindowChrome";
 import { LiveTypesetPreview } from "@/components/mac/LiveTypesetPreview";
+import { DEFAULT_LAYOUT_TUNING } from "@/components/mac/LiveTypesetPreview";
+import type { LayoutTuningParams, PreviewScope } from "@/components/mac/LiveTypesetPreview";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000";
 
@@ -140,6 +142,7 @@ interface SceneData {
   part_title?: string | null;
   source_path?: string | null;
   content_html: string;
+  content_json?: Record<string, unknown> | null;
   version: number;
   word_count: number;
   updated_at: string;
@@ -181,7 +184,7 @@ function editorSceneTitle(content: string): string | null {
 }
 
 function chapterLabel(scene: SceneData) {
-  if (scene.chapter_number === 0) return "Prologue";
+  if (scene.chapter_number === 0) return "Epigraph";
   return scene.chapter_number == null
     ? cleanChapterTitle(scene.chapter_title)
     : `Chapter ${scene.chapter_number} · ${cleanChapterTitle(scene.chapter_title, scene.chapter_number)}`;
@@ -196,6 +199,11 @@ interface SceneRevision {
   summary: string;
   source: "seed" | "editor" | "governance" | string;
   created_at: string;
+  before_text?: string;
+  after_text?: string;
+  is_initial?: boolean;
+  changed_lines?: string[];
+  word_delta?: { added: number; deleted: number };
 }
 
 interface GovernanceProposal {
@@ -436,12 +444,17 @@ export default function LiteraryStudioWorkspace() {
   const [selectedSceneNumber, setSelectedSceneNumber] = useState(1);
   const [scenes, setScenes] = useState<SceneData[]>([]);
   const [sceneContent, setSceneContent] = useState("");
+  const [sceneDocumentJson, setSceneDocumentJson] = useState<Record<string, unknown> | null>(null);
   const [metadataEditorOpen, setMetadataEditorOpen] = useState(false);
   const [metadataDraft, setMetadataDraft] = useState<SceneMetadataDraft | null>(null);
   const [metadataSaving, setMetadataSaving] = useState(false);
   const [metadataError, setMetadataError] = useState<string | null>(null);
   const [editorSettings, setEditorSettings] = useState<EditorTypographySettings>(DEFAULT_EDITOR_SETTINGS);
   const [editorSettingsProjectId, setEditorSettingsProjectId] = useState<string | null>(null);
+  const [layoutTuning, setLayoutTuning] = useState<LayoutTuningParams>(DEFAULT_LAYOUT_TUNING);
+  const [previewScope, setPreviewScope] = useState<PreviewScope>("chapter");
+  const previewDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const triggerDebouncedPreviewRef = useRef<(scope?: PreviewScope, delayMs?: number) => void>(() => {});
   const [mapFocusParagraphIndex, setMapFocusParagraphIndex] = useState<number | null>(null);
   const [mapFocusRequestId, setMapFocusRequestId] = useState(0);
   const [draftSession, setDraftSession] = useState<DraftSession | null>(null);
@@ -654,7 +667,7 @@ export default function LiteraryStudioWorkspace() {
       const chapter = part.chapters.get(chapterKey) ?? {
         key: chapterKey,
         chapter_number: scene.chapter_number ?? null,
-        title: scene.chapter_number === 0 ? "Prologue" : cleanChapterTitle(scene.chapter_title, scene.chapter_number),
+        title: scene.chapter_number === 0 ? "Epigraph" : cleanChapterTitle(scene.chapter_title, scene.chapter_number),
         scenes: [],
       };
       chapter.scenes.push(scene);
@@ -949,11 +962,12 @@ export default function LiteraryStudioWorkspace() {
     fetch(`${API_BASE}/api/projects/${activeProjectId}/editor-settings`)
       .then(async (res) => {
         if (!res.ok) throw new Error(`Editor settings service returned ${res.status}.`);
-        return (await res.json()) as EditorTypographySettings;
+        return (await res.json()) as EditorTypographySettings & { layout_tuning?: Partial<LayoutTuningParams> };
       })
       .then((settings) => {
         if (cancelled) return;
         setEditorSettings({ ...DEFAULT_EDITOR_SETTINGS, ...settings });
+        setLayoutTuning({ ...DEFAULT_LAYOUT_TUNING, ...(settings.layout_tuning ?? {}) });
         setEditorSettingsProjectId(activeProjectId);
       })
       .catch((err) => {
@@ -971,9 +985,21 @@ export default function LiteraryStudioWorkspace() {
     void fetch(`${API_BASE}/api/projects/${activeProjectId}/editor-settings`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(settings),
+      body: JSON.stringify({ ...settings, layout_tuning: layoutTuning }),
     }).catch((err) => console.error("Failed to persist project editor settings:", err));
-  }, [activeProjectId, editorSettingsProjectId]);
+  }, [activeProjectId, editorSettingsProjectId, layoutTuning]);
+
+  const handleLayoutTuningChange = useCallback((tuning: LayoutTuningParams) => {
+    setLayoutTuning(tuning);
+    if (activeProjectId && editorSettingsProjectId === activeProjectId) {
+      void fetch(`${API_BASE}/api/projects/${activeProjectId}/editor-settings`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...editorSettings, layout_tuning: tuning }),
+      }).catch((err) => console.error("Failed to persist layout tuning:", err));
+    }
+    triggerDebouncedPreviewRef.current?.(previewScope, 600);
+  }, [activeProjectId, editorSettings, editorSettingsProjectId, previewScope]);
 
   useEffect(() => {
     if (!activeProjectId || !selectedScene) return;
@@ -1019,6 +1045,7 @@ export default function LiteraryStudioWorkspace() {
         const data = (await res.json()) as SceneData;
         if (!cancelled) {
           setSceneContent(data.content_html);
+          setSceneDocumentJson((data as SceneData & { content_json?: Record<string, unknown> | null }).content_json ?? null);
           setSceneDirty(false);
           setSceneLoaded(true);
           setSaveState("saved");
@@ -1648,7 +1675,7 @@ export default function LiteraryStudioWorkspace() {
     const res = await fetch(`${API_BASE}/api/projects/${activeProjectId}/scenes/${selectedSceneNumber}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content_html: sceneContent, summary: "Editor autosave" }),
+      body: JSON.stringify({ content_html: sceneContent, content_json: sceneDocumentJson, summary: "Editor autosave" }),
     });
     if (!res.ok) {
       setSaveState("error");
@@ -1657,7 +1684,7 @@ export default function LiteraryStudioWorkspace() {
     setSceneDirty(false);
     setSaveState("saved");
     void refreshManualChangeAvailability();
-  }, [activeProjectId, refreshManualChangeAvailability, sceneContent, selectedScene, selectedSceneNumber]);
+  }, [activeProjectId, refreshManualChangeAvailability, sceneContent, sceneDocumentJson, selectedScene, selectedSceneNumber]);
 
   useEffect(() => {
     if (!sceneLoaded || !sceneDirty) return;
@@ -1979,12 +2006,59 @@ export default function LiteraryStudioWorkspace() {
     ? "Full manuscript"
     : `${selectedExportParts.length} part${selectedExportParts.length === 1 ? "" : "s"}, ${selectedExportChapters.length} chapter${selectedExportChapters.length === 1 ? "" : "s"}, ${selectedExportScenes.length} scene${selectedExportScenes.length === 1 ? "" : "s"}`;
 
-  const requestCompilerArtifact = async (outputFormat: CompilerOutputFormat) => {
+  const requestCompilerArtifact = async (
+    outputFormat: CompilerOutputFormat,
+    scopeOverride?: PreviewScope
+  ) => {
     if (!activeProjectId) throw new Error("Choose a project before exporting.");
     if (sceneDirty) await saveScene();
     const projectTitle =
       projects.find((project) => project.project_id === activeProjectId)?.title ??
       "Manuscript";
+
+    let selectionPayload;
+    if (scopeOverride) {
+      const targetScene = liveSelectedSceneForPreview ?? selectedScene ?? (scenes.length > 0 ? scenes[0] : null);
+      selectionPayload = {
+        scene_numbers: [] as number[],
+        chapter_numbers: [] as number[],
+        part_numbers: [] as number[],
+        selection_active: false,
+      };
+      if (scopeOverride === "scene" && targetScene) {
+        selectionPayload = {
+          scene_numbers: [targetScene.scene_number],
+          chapter_numbers: [],
+          part_numbers: [],
+          selection_active: true,
+        };
+      } else if (
+        scopeOverride === "chapter" &&
+        targetScene?.chapter_number !== null &&
+        targetScene?.chapter_number !== undefined
+      ) {
+        selectionPayload = {
+          scene_numbers: [],
+          chapter_numbers: [targetScene.chapter_number],
+          part_numbers: [],
+          selection_active: true,
+        };
+      } else if (
+        scopeOverride === "part" &&
+        targetScene?.part_number !== null &&
+        targetScene?.part_number !== undefined
+      ) {
+        selectionPayload = {
+          scene_numbers: [],
+          chapter_numbers: [],
+          part_numbers: [targetScene.part_number],
+          selection_active: true,
+        };
+      }
+    } else {
+      selectionPayload = exportSelectionPayload();
+    }
+
     const res = await fetch(`${API_BASE}/api/projects/${activeProjectId}/compiler/export`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1992,8 +2066,9 @@ export default function LiteraryStudioWorkspace() {
         title: projectTitle,
         author: "Gabriel McPherson",
         profile_id: formatProfileId,
+        layout_tuning: layoutTuning,
         output_format: outputFormat,
-        ...exportSelectionPayload(),
+        ...selectionPayload,
       }),
     });
     if (!res.ok) {
@@ -2032,7 +2107,7 @@ export default function LiteraryStudioWorkspace() {
 
   const handlePreviewExportArtifact = async (
     format: "pdf" | "docx" | "markdown",
-    previewScope: "scene" | "chapter" | "part" | "full"
+    previewScopeParam: PreviewScope
   ) => {
     if (!activeProjectId) return;
     setIsCompiling(true);
@@ -2040,68 +2115,8 @@ export default function LiteraryStudioWorkspace() {
     setCompilerNotice(null);
 
     try {
-      let selectionPayload = {
-        scene_numbers: [] as number[],
-        chapter_numbers: [] as number[],
-        part_numbers: [] as number[],
-        selection_active: false,
-      };
-      if (previewScope === "scene" && liveSelectedSceneForPreview) {
-        selectionPayload = {
-          scene_numbers: [liveSelectedSceneForPreview.scene_number],
-          chapter_numbers: [],
-          part_numbers: [],
-          selection_active: true,
-        };
-      } else if (
-        previewScope === "chapter" &&
-        liveSelectedSceneForPreview?.chapter_number !== null &&
-        liveSelectedSceneForPreview?.chapter_number !== undefined
-      ) {
-        selectionPayload = {
-          scene_numbers: [],
-          chapter_numbers: [liveSelectedSceneForPreview.chapter_number],
-          part_numbers: [],
-          selection_active: true,
-        };
-      } else if (
-        previewScope === "part" &&
-        liveSelectedSceneForPreview?.part_number !== null &&
-        liveSelectedSceneForPreview?.part_number !== undefined
-      ) {
-        selectionPayload = {
-          scene_numbers: [],
-          chapter_numbers: [],
-          part_numbers: [liveSelectedSceneForPreview.part_number],
-          selection_active: true,
-        };
-      }
-
       if (sceneDirty) await saveScene();
-      const projectTitle =
-        projects.find((project) => project.project_id === activeProjectId)?.title ??
-        "Manuscript";
-      const res = await fetch(`${API_BASE}/api/projects/${activeProjectId}/compiler/export`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: projectTitle,
-          author: "Gabriel McPherson",
-          profile_id: formatProfileId,
-          output_format: format,
-          ...selectionPayload,
-        }),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.detail ?? `Export failed with status ${res.status}.`);
-      }
-      const fallbackExtension = format === "pdf" ? "pdf" : format === "docx" ? "docx" : "md";
-      const blob = await res.blob();
-      const filename =
-        res.headers.get("content-disposition")?.match(/filename="?([^";]+)"?/i)?.[1] ??
-        `${projectTitle.replace(/[^a-z0-9]+/gi, "_")}.${fallbackExtension}`;
-
+      const { blob, filename } = await requestCompilerArtifact(format, previewScopeParam);
       const url = window.URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
@@ -2120,8 +2135,8 @@ export default function LiteraryStudioWorkspace() {
     }
   };
 
-  const requestCompiledPdf = async () => {
-    return requestCompilerArtifact("pdf");
+  const requestCompiledPdf = async (scopeToCompile: PreviewScope = previewScope) => {
+    return requestCompilerArtifact("pdf", scopeToCompile);
   };
 
   const exportShunnPdf = async () => {
@@ -2185,6 +2200,7 @@ export default function LiteraryStudioWorkspace() {
           title: projectTitle,
           author: "Gabriel McPherson",
           profile_id: formatProfileId,
+          layout_tuning: layoutTuning,
           output_format: compilerOutputFormat,
           ...exportSelectionPayload(),
         }),
@@ -2200,11 +2216,12 @@ export default function LiteraryStudioWorkspace() {
     }
   };
 
-  const handlePreviewPDF = async () => {
+  const handlePreviewPDF = async (scopeToCompile: PreviewScope = previewScope) => {
+    if (!activeProjectId) return;
     setIsPreviewing(true);
     setCompilerError(null);
     try {
-      const { blob } = await requestCompiledPdf();
+      const { blob } = await requestCompiledPdf(scopeToCompile);
       setPreviewUrl(window.URL.createObjectURL(blob));
     } catch (err) {
       console.error("Error preparing compiler preview:", err);
@@ -2214,8 +2231,30 @@ export default function LiteraryStudioWorkspace() {
     }
   };
 
+  const handlePreviewPDFRef = useRef<(scope?: PreviewScope) => Promise<void>>(() => Promise.resolve());
+  useEffect(() => {
+    handlePreviewPDFRef.current = handlePreviewPDF;
+  });
+
+  const triggerDebouncedPreview = useCallback((scopeToCompile: PreviewScope = previewScope, delayMs: number = 600) => {
+    if (previewDebounceRef.current) clearTimeout(previewDebounceRef.current);
+    previewDebounceRef.current = setTimeout(() => {
+      void handlePreviewPDFRef.current(scopeToCompile);
+    }, delayMs);
+  }, [previewScope]);
+
+  useEffect(() => {
+    triggerDebouncedPreviewRef.current = triggerDebouncedPreview;
+  }, [triggerDebouncedPreview]);
+
+  const handlePreviewScopeChange = useCallback((newScope: PreviewScope) => {
+    setPreviewScope(newScope);
+    triggerDebouncedPreviewRef.current?.(newScope, 250);
+  }, []);
+
   useEffect(() => {
     return () => {
+      if (previewDebounceRef.current) clearTimeout(previewDebounceRef.current);
       if (previewUrl) window.URL.revokeObjectURL(previewUrl);
     };
   }, [previewUrl]);
@@ -2365,8 +2404,9 @@ export default function LiteraryStudioWorkspace() {
     }, 650);
   };
 
-  const handleEditorUpdate = (content: string) => {
+  const handleEditorUpdate = (content: string, documentJson?: Record<string, unknown>) => {
     setSceneContent(content);
+    if (documentJson) setSceneDocumentJson(documentJson);
     setSceneDirty(true);
     setSaveState("saving");
     queueSceneTitleMetadata(content);
@@ -2653,6 +2693,12 @@ export default function LiteraryStudioWorkspace() {
       setDraftSession(null);
       setDraftSessionError(null);
     }
+    // A scene switch is a document identity boundary. Do not let the prior
+    // editor buffer or autosave lifecycle follow the new scene.
+    setSceneLoaded(false);
+    setSceneDirty(false);
+    setSaveState("loading");
+    setSceneDocumentJson(null);
     setSelectedSceneNumber(sceneNumber);
     setAnnotationLoading(true);
     setEvaluationResult(null);
@@ -3484,7 +3530,7 @@ export default function LiteraryStudioWorkspace() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => void handlePreviewPDF()}
+                      onClick={() => void handlePreviewPDF(previewScope)}
                       disabled={isCompiling || isPreviewing || isAirDropping}
                       className="w-full rounded border border-indigo-500/60 bg-indigo-950/40 px-2.5 py-2 text-left text-xs text-indigo-200 transition hover:bg-indigo-900/60 disabled:cursor-wait disabled:opacity-50"
                     >
@@ -3691,10 +3737,13 @@ export default function LiteraryStudioWorkspace() {
               formatProfileId={formatProfileId}
               onFormatProfileChange={setFormatProfileId}
               pdfUrl={previewUrl}
-              onCompilePdf={() => void handlePreviewPDF()}
+              onCompilePdf={(scope) => void handlePreviewPDF(scope ?? previewScope)}
               isCompilingPdf={isPreviewing}
               onExportArtifact={handlePreviewExportArtifact}
               isExportingArtifact={isCompiling}
+              onTuningChange={handleLayoutTuningChange}
+              scope={previewScope}
+              onScopeChange={handlePreviewScopeChange}
             />
           </div>
         ) : editorViewMode === "split" ? (
@@ -3710,6 +3759,7 @@ export default function LiteraryStudioWorkspace() {
 
                 {sceneLoaded ? (
                   <TiptapEditor
+                    key={`scene-editor-${selectedSceneNumber}`}
                     initialContent={sceneContent}
                     documentLabel={selectedSceneLabel}
                     onUpdate={handleEditorUpdate}
@@ -3760,10 +3810,13 @@ export default function LiteraryStudioWorkspace() {
                 formatProfileId={formatProfileId}
                 onFormatProfileChange={setFormatProfileId}
                 pdfUrl={previewUrl}
-                onCompilePdf={() => void handlePreviewPDF()}
+                onCompilePdf={(scope) => void handlePreviewPDF(scope ?? previewScope)}
                 isCompilingPdf={isPreviewing}
                 onExportArtifact={handlePreviewExportArtifact}
                 isExportingArtifact={isCompiling}
+                onTuningChange={handleLayoutTuningChange}
+                scope={previewScope}
+                onScopeChange={handlePreviewScopeChange}
               />
             </div>
           </div>
@@ -3777,8 +3830,9 @@ export default function LiteraryStudioWorkspace() {
               )}
 
               {sceneLoaded ? (
-                <TiptapEditor
-                  initialContent={sceneContent}
+                    <TiptapEditor
+                      key={`scene-editor-draft-${selectedSceneNumber}`}
+                      initialContent={sceneContent}
                   documentLabel={selectedSceneLabel}
                   onUpdate={handleEditorUpdate}
                   editorSettings={editorSettings}
@@ -4085,7 +4139,7 @@ export default function LiteraryStudioWorkspace() {
                     >
                       <option value="scene">Entire selected scene</option>
                       <option value="chapter" disabled={selectedScene?.chapter_number === null || selectedScene?.chapter_number === undefined}>
-                        Entire chapter ({selectedScene?.chapter_number === 0 ? "Prologue" : selectedScene?.chapter_number ? `Chapter ${selectedScene.chapter_number}` : "choose a manuscript scene"})
+                        Entire chapter ({selectedScene?.chapter_number === 0 ? "Epigraph" : selectedScene?.chapter_number ? `Chapter ${selectedScene.chapter_number}` : "choose a manuscript scene"})
                       </option>
                       <option value="selection">Selected passage in editor</option>
                     </select>
@@ -5131,6 +5185,11 @@ export default function LiteraryStudioWorkspace() {
                             Revision {selectedRevision.version}
                           </h3>
                           <span className="text-[10px] text-slate-500">{selectedRevision.source}</span>
+                          <span className="ml-2 text-[10px] text-slate-500">
+                            {selectedRevision.is_initial
+                              ? "initial snapshot"
+                              : `+${selectedRevision.word_delta?.added ?? 0} / −${selectedRevision.word_delta?.deleted ?? 0} words`}
+                          </span>
                         </div>
                         <button
                           type="button"
@@ -5143,6 +5202,18 @@ export default function LiteraryStudioWorkspace() {
                             : "Restore this revision"}
                         </button>
                       </div>
+                      {!selectedRevision.is_initial && selectedRevision.changed_lines?.length ? (
+                        <div className="mb-4 rounded border border-slate-800 bg-slate-950/70 p-3 font-mono text-xs leading-relaxed">
+                          {selectedRevision.changed_lines.map((line, index) => (
+                            <div
+                              key={`${selectedRevision.revision_id}-${index}`}
+                              className={line.startsWith("+ ") ? "bg-emerald-950/50 text-emerald-200" : line.startsWith("- ") ? "bg-rose-950/50 text-rose-200" : "text-slate-500"}
+                            >
+                              {line}
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
                       <div className="whitespace-pre-wrap font-serif text-sm leading-relaxed text-slate-200">
                         {selectedRevision.content_text}
                       </div>
