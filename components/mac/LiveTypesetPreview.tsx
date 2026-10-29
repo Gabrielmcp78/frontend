@@ -1104,6 +1104,14 @@ export type StyleTarget =
   | "scene-break";
 
 export interface LayoutTuningParams {
+  fontFamily: "cormorant" | "garamond" | "georgia" | "system";
+  useBold: boolean;
+  useItalic: boolean;
+  showPartCover: boolean;
+  showChapterHero: boolean;
+  showSceneTitle: boolean;
+  showDropCap: boolean;
+  showLeadCaps: boolean;
   // 1. Chapter Opener Hero & Titles
   chapterHeroSize: number; // px, 32 to 96
   chapterHeroColor: string; // hex
@@ -1155,6 +1163,14 @@ export interface LayoutTuningParams {
 }
 
 export const DEFAULT_LAYOUT_TUNING: LayoutTuningParams = {
+  fontFamily: "cormorant",
+  useBold: true,
+  useItalic: true,
+  showPartCover: true,
+  showChapterHero: true,
+  showSceneTitle: true,
+  showDropCap: true,
+  showLeadCaps: true,
   chapterHeroSize: 48,
   chapterHeroColor: "#8b3a2b",
   chapterHeroWeight: "normal",
@@ -1592,7 +1608,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
       : `${selectedScene?.scene_number ?? 1}`;
 
   return (
-    <div className="flex flex-col h-full w-full min-w-0 bg-zinc-900 border-l border-zinc-800 select-none overflow-hidden relative">
+    <div style={{ fontFamily: tuning.fontFamily === "cormorant" ? '"Cormorant Garamond", Georgia, serif' : tuning.fontFamily === "garamond" ? 'Garamond, Georgia, serif' : tuning.fontFamily === "georgia" ? 'Georgia, serif' : 'system-ui, sans-serif' }} className="flex flex-col h-full w-full min-w-0 bg-zinc-900 border-l border-zinc-800 select-none overflow-hidden relative">
       {metadataField && showTuner && (
         <div className="absolute right-3 top-14 z-30 w-80 rounded-lg border border-amber-500/50 bg-zinc-950/95 p-3 shadow-2xl backdrop-blur">
           <div className="mb-2 flex items-center justify-between">
@@ -1965,7 +1981,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                   return (
                     <div key={pIdx} className="space-y-14">
                       {/* ================= PART COVER PAGE ================= */}
-                      {(scope === "part" || scope === "full") && (partMeta || partTitle) && (
+                      {tuning.showPartCover && (scope === "part" || scope === "full") && (partMeta || partTitle) && (
                         <div className="pt-[72pt] pb-20 px-4 text-center border-b border-stone-300 space-y-6">
                           <p onDoubleClick={() => openMetadataField("part_title")} title="Double-click to edit part title" className="text-[24pt] font-cormorant font-bold uppercase tracking-[0.25em] text-[#8b3a2b] leading-tight">
                             {partMeta?.roman || (partNum !== null ? `PART ${partNum}` : partTitle)}
@@ -2047,7 +2063,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                 </div>
 
                                 {/* Bold Rust-Red Chapter Numeral */}
-                                <div
+                                {tuning.showChapterHero && <div
                                   onClick={(e) => {
                                     if (showTuner) {
                                       e.stopPropagation();
@@ -2073,7 +2089,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                   title={showTuner ? "Click to tune Chapter Hero Numeral style" : undefined}
                                 >
                                   {chapterNum !== null ? chapterNum : ""}
-                                </div>
+                                </div>}
 
                                 {/* Spaced Chapter Title in Tracked Uppercase */}
                                 <h3
@@ -2198,7 +2214,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                               >
                                                 {finalCoord}
                                               </span>
-                                              {sceneTitleText && (
+                                              {sceneTitleText && tuning.showSceneTitle && (
                                                 <span
                                                   style={{
                                                     fontSize: `${tuning.titleSize}px`,
@@ -2282,7 +2298,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                         setSelectedTarget("prose");
                                       }
                                     }}
-                                    className={`typeset-prose-body prose prose-base max-w-none text-[#2d2926] leading-relaxed text-justify font-serif space-y-0 ${getTargetOutline(
+                                    className={`typeset-prose-body prose prose-base max-w-none text-[#2d2926] leading-relaxed text-justify font-serif space-y-0 ${!tuning.showDropCap ? "[&_.typeset-drop-cap]:hidden" : ""} ${!tuning.showLeadCaps ? "[&_.typeset-lead-caps]:normal-case [&_.typeset-lead-caps]:tracking-normal" : ""} ${getTargetOutline(
                                       "prose"
                                     )} [&>p]:indent-6 [&>p:first-of-type]:indent-0 [&_[data-semantic-style='block-1']]:ml-8 [&_[data-semantic-style='block-1']]:indent-0 [&_[data-semantic-style='block-2']]:ml-14 [&_[data-semantic-style='block-2']]:indent-0 [&_[data-semantic-style='stage-direction']]:italic [&_[data-semantic-style='stage-direction']]:text-[#595959] [&_[data-semantic-style='stage-direction']]:ml-8 [&_[data-semantic-style='stage-direction']]:indent-0 [&_[data-semantic-style='interior-italic-1']]:italic [&_[data-semantic-style='interior-italic-1']]:ml-8 [&_[data-semantic-style='interior-italic-1']]:indent-0 [&_[data-semantic-style='interior-italic-2']]:italic [&_[data-semantic-style='interior-italic-2']]:ml-14 [&_[data-semantic-style='interior-italic-2']]:indent-0 [&_[data-semantic-style='epigraph']]:text-center [&_[data-semantic-style='epigraph']]:italic [&_[data-semantic-style='epigraph']]:my-4 [&_[data-semantic-style='epigraph']]:indent-0 [&_[data-semantic-style='instrumentation']]:text-center [&_[data-semantic-style='instrumentation']]:italic [&_[data-semantic-style='instrumentation']]:text-xs [&_[data-semantic-style='instrumentation']]:text-[#404040] [&_[data-semantic-style='instrumentation']]:indent-0 [&_[data-semantic-style='tempo-marking']]:text-center [&_[data-semantic-style='tempo-marking']]:italic [&_[data-semantic-style='tempo-marking']]:text-[#404040] [&_[data-semantic-style='tempo-marking']]:text-xs [&_[data-semantic-style='tempo-marking']]:my-3 [&_[data-semantic-style='tempo-marking']]:indent-0 [&_[data-semantic-style='dateline']]:text-right [&_[data-semantic-style='dateline']]:text-xs [&_[data-semantic-style='dateline']]:text-[#595959] [&_[data-semantic-style='dateline']]:indent-0 [&_[data-semantic-style='location']]:italic [&_[data-semantic-style='location']]:text-xs [&_[data-semantic-style='location']]:text-[#595959] [&_[data-semantic-style='location']]:indent-0 [&_[data-semantic-style='scene-title']]:text-xs [&_[data-semantic-style='scene-title']]:font-semibold [&_[data-semantic-style='scene-title']]:uppercase [&_[data-semantic-style='scene-title']]:tracking-[0.18em] [&_[data-semantic-style='scene-title']]:indent-0 [&_[data-semantic-style='music-formal-1']]:text-center [&_[data-semantic-style='music-formal-1']]:italic [&_[data-semantic-style='music-formal-1']]:text-[#2F5496] [&_[data-semantic-style='music-formal-1']]:text-xs [&_[data-semantic-style='music-formal-1']]:my-2 [&_[data-semantic-style='music-formal-1']]:indent-0 [&_[data-semantic-style='music-formal-2']]:text-center [&_[data-semantic-style='music-formal-2']]:italic [&_[data-semantic-style='music-formal-2']]:text-[#404040] [&_[data-semantic-style='music-formal-2']]:text-xs [&_[data-semantic-style='music-formal-2']]:my-1 [&_[data-semantic-style='music-formal-2']]:indent-0 [&_[data-semantic-style='movement']]:italic [&_[data-semantic-style='movement']]:text-xs [&_[data-semantic-style='movement']]:text-[#2F5496] [&_[data-semantic-style='movement']]:my-1 [&_[data-semantic-style='movement']]:indent-0 [&_[data-semantic-style='scene-secondary']]:italic [&_[data-semantic-style='scene-secondary']]:text-xs [&_[data-semantic-style='scene-secondary']]:text-stone-600 [&_[data-semantic-style='scene-secondary']]:my-1 [&_[data-semantic-style='scene-secondary']]:indent-0 [&_blockquote]:border-l-0 [&_blockquote]:italic [&_blockquote]:text-center [&_blockquote]:my-5 [&_blockquote]:text-stone-700 [&_blockquote>p]:indent-0 [&_.typeset-math-display]:my-4 [&_.typeset-math-display]:text-center [&_.typeset-math-display]:indent-0 [&_.typeset-math-display]:text-stone-900`}
                                     title={showTuner ? "Click to tune Prose & Opening Indent style" : undefined}
@@ -2361,6 +2377,20 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
               </button>
             </div>
           </div>
+          <section className="rounded border border-zinc-800 bg-zinc-950/60 p-3 space-y-2">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-300">Hierarchy & typography</div>
+            <label className="block text-[10px] text-zinc-500">Display font
+              <select value={tuning.fontFamily} onChange={(e) => updateTuning({ fontFamily: e.target.value as LayoutTuningParams["fontFamily"] })} className="mt-1 w-full rounded border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-xs text-zinc-200">
+                <option value="cormorant">Cormorant</option><option value="garamond">Garamond</option><option value="georgia">Georgia</option><option value="system">System</option>
+              </select>
+            </label>
+            <div className="grid grid-cols-2 gap-1 text-[10px] text-zinc-400">
+              {([['useBold','Bold'],['useItalic','Italic'],['showPartCover','Part covers'],['showChapterHero','Chapter numerals'],['showSceneTitle','Scene titles'],['showDropCap','Drop caps'],['showLeadCaps','Lead caps']] as const).map(([key, label]) => (
+                <label key={key} className="flex items-center gap-1"><input type="checkbox" checked={tuning[key]} onChange={(e) => updateTuning({ [key]: e.target.checked } as Partial<LayoutTuningParams>)} className="accent-amber-500" /> {label}</label>
+              ))}
+            </div>
+            <div className="border-t border-zinc-800 pt-2 text-[10px] text-zinc-500">Click a hierarchy target in the page to tune its field; double-click a metadata element to edit its manifest value.</div>
+          </section>
 
           {/* Target Selector Pills */}
           <div className="flex items-center gap-1 overflow-x-auto pb-1 no-scrollbar text-[11px]">
