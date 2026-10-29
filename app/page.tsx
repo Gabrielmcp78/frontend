@@ -143,6 +143,7 @@ interface SceneData {
   source_path?: string | null;
   content_html: string;
   content_json?: Record<string, unknown> | null;
+  manifest?: Record<string, unknown> | null;
   version: number;
   word_count: number;
   updated_at: string;
@@ -2614,6 +2615,31 @@ export default function LiteraryStudioWorkspace() {
     }
   };
 
+  const saveManifestField = async (scene: SceneData, patch: Record<string, string>) => {
+    if (!activeProjectId) return;
+    const manifest = { ...(scene.manifest ?? {}), ...patch };
+    try {
+      const res = await fetch(`${API_BASE}/api/projects/${activeProjectId}/scenes/${scene.scene_number}/metadata`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: scene.title,
+          chapter_number: scene.chapter_number ?? null,
+          chapter_title: scene.chapter_title ?? null,
+          scene_number_in_chapter: scene.scene_number_in_chapter ?? null,
+          part_number: scene.part_number ?? null,
+          part_title: scene.part_title ?? null,
+          manifest,
+        }),
+      });
+      const updated = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(updated?.detail ?? `Manifest field update returned ${res.status}.`);
+      setScenes((previous) => previous.map((item) => item.scene_number === scene.scene_number ? updated as SceneData : item));
+    } catch (error) {
+      setMetadataError(error instanceof Error ? error.message : "Unable to save manifest field.");
+    }
+  };
+
   const handleSceneSelect = useCallback((sceneNumber: number, paragraphIndex: number | null = null) => {
     setMapFocusParagraphIndex(paragraphIndex);
     setMapFocusRequestId((current) => current + 1);
@@ -3657,6 +3683,7 @@ export default function LiteraryStudioWorkspace() {
               formatProfileId={formatProfileId}
               onFormatProfileChange={setFormatProfileId}
               onTuningChange={handleLayoutTuningChange}
+              onMetadataChange={(scene, patch) => void saveManifestField(scene as SceneData, patch)}
               scope={previewScope}
               onScopeChange={handlePreviewScopeChange}
             />
@@ -3725,6 +3752,7 @@ export default function LiteraryStudioWorkspace() {
                 formatProfileId={formatProfileId}
                 onFormatProfileChange={setFormatProfileId}
                 onTuningChange={handleLayoutTuningChange}
+                onMetadataChange={(scene, patch) => void saveManifestField(scene as SceneData, patch)}
                 scope={previewScope}
                 onScopeChange={handlePreviewScopeChange}
               />

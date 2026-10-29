@@ -10,6 +10,7 @@ export interface PreviewSceneData {
   title?: string | null;
   content_html?: string | null;
   content_json?: Record<string, unknown> | null;
+  manifest?: Record<string, unknown> | null;
   chapter_number?: number | null;
   chapter_title?: string | null;
   scene_number_in_chapter?: number | null;
@@ -1238,6 +1239,7 @@ interface LiveTypesetPreviewProps {
   isExportingArtifact?: boolean;
   scope?: PreviewScope;
   onScopeChange?: (scope: PreviewScope) => void;
+  onMetadataChange?: (scene: PreviewSceneData, patch: Record<string, string>) => void;
 }
 
 export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
@@ -1255,6 +1257,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
   isExportingArtifact = false,
   scope: propScope,
   onScopeChange,
+  onMetadataChange,
 }) => {
   const [internalScope, setInternalScope] = useState<PreviewScope>("chapter");
   const scope = propScope ?? internalScope;
@@ -1264,6 +1267,8 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
   const [showTuner, setShowTuner] = useState<boolean>(false);
   const [selectedTarget, setSelectedTarget] = useState<StyleTarget>("all");
   const [copiedTuning, setCopiedTuning] = useState<boolean>(false);
+  const [metadataField, setMetadataField] = useState<string | null>(null);
+  const [metadataValue, setMetadataValue] = useState("");
 
   const compileDebounceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -1539,6 +1544,31 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
     printWindow.document.close();
   }, [author, projectTitle, targetScenes, tuning]);
 
+  const metadataFields = [
+    { key: "part_title", label: "Part title", group: "Part" },
+    { key: "part_form", label: "Part musical form", group: "Part" },
+    { key: "instrumentation", label: "Instrumentation / cast", group: "Part" },
+    { key: "epigraph", label: "Part epigraph", group: "Part" },
+    { key: "chapter_title", label: "Chapter title", group: "Chapter" },
+    { key: "chapter_tempo", label: "Chapter tempo / architecture", group: "Chapter" },
+    { key: "scene_title", label: "Scene title", group: "Scene" },
+    { key: "scene_phase", label: "Section phase / movement role", group: "Scene" },
+    { key: "location", label: "Location / setting", group: "Scene" },
+    { key: "time", label: "Time / epoch", group: "Scene" },
+  ];
+
+  const openMetadataField = (field: string) => {
+    if (!selectedScene) return;
+    setMetadataField(field);
+    setMetadataValue(String(selectedScene.manifest?.[field] ?? (field === "scene_title" ? selectedScene.title : field === "chapter_title" ? selectedScene.chapter_title ?? "" : "")));
+  };
+
+  const saveMetadataField = () => {
+    if (!selectedScene || !metadataField || !onMetadataChange) return;
+    onMetadataChange(selectedScene, { [metadataField]: metadataValue });
+    setMetadataField(null);
+  };
+
   const activeChapterLabel = selectedScene?.chapter_number
     ? `Chapter ${selectedScene.chapter_number}`
     : selectedScene?.chapter_title || "Chapter";
@@ -1557,6 +1587,27 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
 
   return (
     <div className="flex flex-col h-full w-full min-w-0 bg-zinc-900 border-l border-zinc-800 select-none overflow-hidden relative">
+      {metadataField && showTuner && (
+        <div className="absolute right-3 top-14 z-30 w-80 rounded-lg border border-amber-500/50 bg-zinc-950/95 p-3 shadow-2xl backdrop-blur">
+          <div className="mb-2 flex items-center justify-between">
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-300">Manifest field</div>
+              <div className="text-xs text-zinc-300">{metadataFields.find((field) => field.key === metadataField)?.label}</div>
+            </div>
+            <button type="button" onClick={() => setMetadataField(null)} className="text-xs text-zinc-500 hover:text-zinc-200">×</button>
+          </div>
+          <textarea
+            autoFocus
+            value={metadataValue}
+            onChange={(event) => setMetadataValue(event.target.value)}
+            className="min-h-20 w-full rounded border border-zinc-700 bg-zinc-900 p-2 text-xs text-zinc-100 outline-none focus:border-amber-400"
+          />
+          <div className="mt-2 flex justify-end gap-2">
+            <button type="button" onClick={() => setMetadataField(null)} className="rounded border border-zinc-700 px-2 py-1 text-[11px] text-zinc-400">Cancel</button>
+            <button type="button" onClick={saveMetadataField} className="rounded bg-amber-600 px-2 py-1 text-[11px] font-medium text-white hover:bg-amber-500">Save field</button>
+          </div>
+        </div>
+      )}
       {/* Top Controls Bar */}
       <div className="p-2.5 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md flex flex-wrap items-center justify-between gap-2 shrink-0 z-10">
         {/* Scope Selector */}
@@ -1902,7 +1953,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                       {/* ================= PART COVER PAGE ================= */}
                       {(scope === "part" || scope === "full") && (partMeta || partTitle) && (
                         <div className="pt-[72pt] pb-20 px-4 text-center border-b border-stone-300 space-y-6">
-                          <p className="text-[24pt] font-cormorant font-bold uppercase tracking-[0.25em] text-[#8b3a2b] leading-tight">
+                          <p onDoubleClick={() => openMetadataField("part_title")} title="Double-click to edit part title" className="text-[24pt] font-cormorant font-bold uppercase tracking-[0.25em] text-[#8b3a2b] leading-tight">
                             {partMeta?.roman || (partNum !== null ? `PART ${partNum}` : partTitle)}
                           </p>
                           <h2 className="text-[18pt] font-serif italic text-zinc-950 font-normal mt-[24pt]">
@@ -1962,6 +2013,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                               <div className="pt-6 pb-6 text-center space-y-3">
                                 {/* Top Running Header */}
                                 <div
+                                  onDoubleClick={() => openMetadataField("chapter_title")}
                                   onClick={(e) => {
                                     if (showTuner) {
                                       e.stopPropagation();
@@ -2126,6 +2178,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                           >
                                             <div className="flex items-baseline gap-2 leading-none min-w-0">
                                               <span
+                                                onDoubleClick={() => openMetadataField("scene_title")}
                                                 style={{ fontSize: `${tuning.sceneNumSize}px` }}
                                                 className="font-cormorant font-semibold text-[11pt] tracking-tight text-[#1a1715] leading-none shrink-0"
                                               >
@@ -2145,6 +2198,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                             </div>
                                             {formalStructure && (
                                               <span
+                                                onDoubleClick={() => openMetadataField("scene_phase")}
                                                 style={{
                                                   fontSize: `${tuning.formalSize}px`,
                                                   letterSpacing: `${tuning.formalTracking}em`,
@@ -2175,7 +2229,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                               <span />
                                             )}
                                             {sceneDateline ? (
-                                              <span className="font-cormorant font-medium italic text-[9.5pt] text-[#595959] shrink-0 leading-tight">
+                                              <span onDoubleClick={() => openMetadataField("time")} title="Double-click to edit time / epoch" className="font-cormorant font-medium italic text-[9.5pt] text-[#595959] shrink-0 leading-tight">
                                                 {sceneDateline}
                                               </span>
                                             ) : (
