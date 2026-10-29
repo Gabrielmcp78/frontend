@@ -1239,7 +1239,7 @@ interface LiveTypesetPreviewProps {
   isExportingArtifact?: boolean;
   scope?: PreviewScope;
   onScopeChange?: (scope: PreviewScope) => void;
-  onMetadataChange?: (scene: PreviewSceneData, patch: Record<string, string>) => void;
+  onMetadataChange?: (scene: PreviewSceneData, patch: Record<string, string>, options: { scope: "instance" | "scene" | "chapter" | "part" | "global"; includeInToc: boolean }) => void;
 }
 
 export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
@@ -1269,6 +1269,8 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
   const [copiedTuning, setCopiedTuning] = useState<boolean>(false);
   const [metadataField, setMetadataField] = useState<string | null>(null);
   const [metadataValue, setMetadataValue] = useState("");
+  const [metadataScope, setMetadataScope] = useState<"instance" | "scene" | "chapter" | "part" | "global">("scene");
+  const [metadataIncludeInToc, setMetadataIncludeInToc] = useState(false);
 
   const compileDebounceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -1561,11 +1563,15 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
     if (!selectedScene) return;
     setMetadataField(field);
     setMetadataValue(String(selectedScene.manifest?.[field] ?? (field === "scene_title" ? selectedScene.title : field === "chapter_title" ? selectedScene.chapter_title ?? "" : "")));
+    const scopes = (selectedScene.manifest?.field_scopes as Record<string, string> | undefined) ?? {};
+    const scope = scopes[field];
+    if (scope === "instance" || scope === "scene" || scope === "chapter" || scope === "part" || scope === "global") setMetadataScope(scope);
+    setMetadataIncludeInToc(Boolean((selectedScene.manifest?.toc_fields as string[] | undefined)?.includes(field)));
   };
 
   const saveMetadataField = () => {
     if (!selectedScene || !metadataField || !onMetadataChange) return;
-    onMetadataChange(selectedScene, { [metadataField]: metadataValue });
+    onMetadataChange(selectedScene, { [metadataField]: metadataValue }, { scope: metadataScope, includeInToc: metadataIncludeInToc });
     setMetadataField(null);
   };
 
@@ -1602,6 +1608,14 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
             onChange={(event) => setMetadataValue(event.target.value)}
             className="min-h-20 w-full rounded border border-zinc-700 bg-zinc-900 p-2 text-xs text-zinc-100 outline-none focus:border-amber-400"
           />
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <label className="text-[10px] text-zinc-500">Update scope
+              <select value={metadataScope} onChange={(event) => setMetadataScope(event.target.value as typeof metadataScope)} className="mt-1 w-full rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-[11px] text-zinc-200">
+                <option value="instance">This instance</option><option value="scene">Scene</option><option value="chapter">Chapter</option><option value="part">Part</option><option value="global">Global default</option>
+              </select>
+            </label>
+            <label className="flex items-end gap-1 pb-1 text-[10px] text-zinc-400"><input type="checkbox" checked={metadataIncludeInToc} onChange={(event) => setMetadataIncludeInToc(event.target.checked)} className="accent-amber-500" /> Include in TOC</label>
+          </div>
           <div className="mt-2 flex justify-end gap-2">
             <button type="button" onClick={() => setMetadataField(null)} className="rounded border border-zinc-700 px-2 py-1 text-[11px] text-zinc-400">Cancel</button>
             <button type="button" onClick={saveMetadataField} className="rounded bg-amber-600 px-2 py-1 text-[11px] font-medium text-white hover:bg-amber-500">Save field</button>

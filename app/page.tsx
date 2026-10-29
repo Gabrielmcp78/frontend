@@ -2615,9 +2615,17 @@ export default function LiteraryStudioWorkspace() {
     }
   };
 
-  const saveManifestField = async (scene: SceneData, patch: Record<string, string>) => {
+  const saveManifestField = async (scene: SceneData, patch: Record<string, string>, options: { scope: "instance" | "scene" | "chapter" | "part" | "global"; includeInToc: boolean }) => {
     if (!activeProjectId) return;
-    const manifest = { ...(scene.manifest ?? {}), ...patch };
+    const previous = scene.manifest ?? {};
+    const manifest = {
+      ...previous,
+      ...patch,
+      field_scopes: { ...((previous.field_scopes as Record<string, string> | undefined) ?? {}), ...Object.fromEntries(Object.keys(patch).map((field) => [field, options.scope])) },
+      toc_fields: options.includeInToc
+        ? Array.from(new Set([...(Array.isArray(previous.toc_fields) ? previous.toc_fields as string[] : []), ...Object.keys(patch)]))
+        : (Array.isArray(previous.toc_fields) ? (previous.toc_fields as string[]).filter((field) => !Object.keys(patch).includes(field)) : []),
+    };
     try {
       const res = await fetch(`${API_BASE}/api/projects/${activeProjectId}/scenes/${scene.scene_number}/metadata`, {
         method: "PUT",
@@ -3683,7 +3691,7 @@ export default function LiteraryStudioWorkspace() {
               formatProfileId={formatProfileId}
               onFormatProfileChange={setFormatProfileId}
               onTuningChange={handleLayoutTuningChange}
-              onMetadataChange={(scene, patch) => void saveManifestField(scene as SceneData, patch)}
+              onMetadataChange={(scene, patch, options) => void saveManifestField(scene as SceneData, patch, options)}
               scope={previewScope}
               onScopeChange={handlePreviewScopeChange}
             />
@@ -3752,7 +3760,7 @@ export default function LiteraryStudioWorkspace() {
                 formatProfileId={formatProfileId}
                 onFormatProfileChange={setFormatProfileId}
                 onTuningChange={handleLayoutTuningChange}
-                onMetadataChange={(scene, patch) => void saveManifestField(scene as SceneData, patch)}
+                onMetadataChange={(scene, patch, options) => void saveManifestField(scene as SceneData, patch, options)}
                 scope={previewScope}
                 onScopeChange={handlePreviewScopeChange}
               />
