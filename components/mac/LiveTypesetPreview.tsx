@@ -1327,21 +1327,19 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
   };
 
   const updateTuning = (patch: Partial<LayoutTuningParams>) => {
-    setTuning((prev) => {
-      const updated = { ...prev, ...patch };
-      if (typeof window !== "undefined") {
-        try {
-          localStorage.setItem("string_theories_typeset_tuning", JSON.stringify(updated));
-        } catch {
-          /* ignore */
-        }
+    const updated = { ...tuning, ...patch };
+    setTuning(updated);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("string_theories_typeset_tuning", JSON.stringify(updated));
+      } catch {
+        /* ignore */
       }
-      onTuningChange?.(updated);
-      if (renderMode === "pdf") {
-        debouncedCompilePdf(scope, 600);
-      }
-      return updated;
-    });
+    }
+    onTuningChange?.(updated);
+    if (renderMode === "pdf") {
+      debouncedCompilePdf(scope, 600);
+    }
   };
 
   const resetTuning = () => {
