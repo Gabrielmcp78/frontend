@@ -9,11 +9,50 @@ export interface PreviewSceneData {
   scene_number: number;
   title?: string | null;
   content_html?: string | null;
+  content_json?: Record<string, unknown> | null;
   chapter_number?: number | null;
   chapter_title?: string | null;
   scene_number_in_chapter?: number | null;
   part_number?: number | null;
   part_title?: string | null;
+}
+
+function escapeDocumentText(value: string): string {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function renderDocumentJson(node: unknown): string {
+  if (!node || typeof node !== "object") return "";
+  const value = node as { type?: string; text?: string; attrs?: Record<string, unknown>; content?: unknown[]; marks?: Array<{ type?: string }> };
+  if (value.type === "text") {
+    let text = escapeDocumentText(value.text ?? "");
+    for (const mark of value.marks ?? []) {
+      if (mark.type === "bold") text = `<strong>${text}</strong>`;
+      else if (mark.type === "italic") text = `<em>${text}</em>`;
+      else if (mark.type === "strike") text = `<s>${text}</s>`;
+      else if (mark.type === "code") text = `<code>${text}</code>`;
+    }
+    return text;
+  }
+  const children = (value.content ?? []).map(renderDocumentJson).join("");
+  switch (value.type) {
+    case "doc": return children;
+    case "paragraph": return `<p>${children}</p>`;
+    case "heading": return `<h${Math.min(6, Math.max(1, Number(value.attrs?.level) || 1))}>${children}</h${Math.min(6, Math.max(1, Number(value.attrs?.level) || 1))}>`;
+    case "blockquote": return `<blockquote>${children}</blockquote>`;
+    case "bulletList": return `<ul>${children}</ul>`;
+    case "orderedList": return `<ol>${children}</ol>`;
+    case "listItem": return `<li>${children}</li>`;
+    case "hardBreak": return "<br>";
+    case "horizontalRule": return "<hr>";
+    case "codeBlock": return `<pre><code>${children}</code></pre>`;
+    default: return children;
+  }
+}
+
+function sceneSourceHtml(scene: PreviewSceneData): string {
+  const jsonHtml = scene.content_json ? renderDocumentJson(scene.content_json) : "";
+  return jsonHtml || scene.content_html || "<p>Empty scene content.</p>";
 }
 
 export const CANONICAL_PARTS_METADATA: Record<
@@ -1449,7 +1488,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
         ? `${scene.chapter_number}.${scene.scene_number_in_chapter}`
         : `${scene.scene_number}`;
       const processed = processSceneContent(
-        scene.content_html || "<p>Empty scene content.</p>",
+        sceneSourceHtml(scene),
         scene.title,
         coord,
         scene.chapter_number ?? null,
@@ -1782,7 +1821,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                               <div
                                 className="prose prose-sm max-w-none text-zinc-800 leading-loose text-justify font-mono space-y-4 [&>p]:indent-8"
                                 dangerouslySetInnerHTML={{
-                                  __html: sc.content_html || "<p>Empty scene content.</p>",
+                                  __html: sceneSourceHtml(sc),
                                 }}
                               />
 
@@ -2030,7 +2069,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                 hasAuthoredTitle,
                                 renderedHtml: formattedProseHtml,
                               } = processSceneContent(
-                                sc.content_html || "<p>Empty scene content.</p>",
+                                    sceneSourceHtml(sc),
                                 sc.title,
                                 coord,
                                 chapterNum,

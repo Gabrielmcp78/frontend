@@ -636,16 +636,16 @@ export default function LiteraryStudioWorkspace() {
   const liveScenesForPreview = useMemo(() => {
     return scenes.map((s) => {
       if (s.scene_number === selectedSceneNumber) {
-        return { ...s, content_html: sceneContent };
+        return { ...s, content_html: sceneContent, content_json: sceneDocumentJson };
       }
       return s;
     });
-  }, [scenes, selectedSceneNumber, sceneContent]);
+  }, [scenes, selectedSceneNumber, sceneContent, sceneDocumentJson]);
 
   const liveSelectedSceneForPreview = useMemo(() => {
     if (!selectedScene) return null;
-    return { ...selectedScene, content_html: sceneContent };
-  }, [selectedScene, sceneContent]);
+    return { ...selectedScene, content_html: sceneContent, content_json: sceneDocumentJson };
+  }, [selectedScene, sceneContent, sceneDocumentJson]);
 
   const partGroups = Array.from(
     scenes.reduce((parts, scene) => {
