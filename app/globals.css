@@ -1,4 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
+
+.font-cormorant {
+  font-family: "Cormorant Garamond", "New York", "Charter", Georgia, serif;
+}
 
 :root {
   --background: #ffffff;

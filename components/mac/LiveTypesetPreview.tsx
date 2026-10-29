@@ -1503,6 +1503,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
     const tuningPayload = escapePrintHtml(JSON.stringify(tuning));
     printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${escapePrintHtml(projectTitle)} — print</title>
       <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap');
         @page { size: 6in 9in; margin: 0.7in 0.72in 0.78in; }
         :root { --body-size: ${tuning.bodyFontSize}px; --line-height: ${tuning.bodyLineHeight}; --indent: ${tuning.openingIndent}in; --header-size: ${tuning.runningHeaderSize}px; --header-tracking: ${tuning.runningHeaderTracking}em; --math-border: ${tuning.mathBorderWidth}px; --math-x: ${tuning.mathPaddingX}px; --math-y: ${tuning.mathPaddingY}px; }
         * { box-sizing: border-box; }
@@ -1513,11 +1514,11 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
         .book-title h1 { margin: 0; font-size: 1.55em; letter-spacing: .18em; text-transform: uppercase; }
         .book-title p { margin: .5em 0 0; font-size: .85em; }
         .scene { break-inside: auto; page-break-inside: auto; margin: 0 0 2.2em; }
-        .scene-header { display: flex; gap: 1em; align-items: baseline; border-bottom: ${tuning.ruleThickness}px solid #777; margin: 0 0 ${tuning.sceneHeaderBottomGap}px; padding-bottom: ${tuning.titleGap}px; break-after: avoid; }
+        .scene-header { display: flex; gap: 1em; align-items: baseline; border-bottom: ${tuning.ruleThickness}px solid #777; margin: 0 0 ${tuning.sceneHeaderBottomGap}px; padding-bottom: ${tuning.titleGap}px; break-after: avoid; font-family: "Cormorant Garamond", Georgia, serif; }
         .scene-number { font-size: ${tuning.sceneNumSize}px; color: #5b657e; }
         .formal { font-size: ${tuning.formalSize}px; letter-spacing: ${tuning.formalTracking}em; text-transform: uppercase; }
         h2 { margin: 0; font-size: ${tuning.titleSize}px; letter-spacing: ${tuning.titleTracking}em; text-transform: uppercase; }
-        .tempo, .dateline { font-size: ${tuning.tempoSize}px; font-style: italic; margin: .35em 0 1em; }
+        .tempo, .dateline { font-family: "Cormorant Garamond", Georgia, serif; font-size: ${tuning.tempoSize}px; font-style: italic; margin: .35em 0 1em; }
         .dateline { font-size: ${tuning.runningHeaderSize}px; letter-spacing: .08em; text-transform: uppercase; }
         .prose > p { margin: 0 0 .75em; text-align: justify; orphans: 3; widows: 3; }
         .prose > p:not(:first-child) { text-indent: ${tuning.openingIndent}in; }
@@ -1901,7 +1902,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                       {/* ================= PART COVER PAGE ================= */}
                       {(scope === "part" || scope === "full") && (partMeta || partTitle) && (
                         <div className="pt-[72pt] pb-20 px-4 text-center border-b border-stone-300 space-y-6">
-                          <p className="text-[24pt] font-serif font-bold uppercase tracking-[0.25em] text-[#8b3a2b] leading-tight">
+                          <p className="text-[24pt] font-cormorant font-bold uppercase tracking-[0.25em] text-[#8b3a2b] leading-tight">
                             {partMeta?.roman || (partNum !== null ? `PART ${partNum}` : partTitle)}
                           </p>
                           <h2 className="text-[18pt] font-serif italic text-zinc-950 font-normal mt-[24pt]">
@@ -2000,7 +2001,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                         : 400,
                                     marginBottom: `${tuning.chapterHeroMarginBottom}px`,
                                   }}
-                                  className={`font-serif tracking-tight leading-none select-none ${getTargetOutline(
+                                  className={`font-cormorant tracking-tight leading-none select-none ${getTargetOutline(
                                     "chapter-hero"
                                   )}`}
                                   title={showTuner ? "Click to tune Chapter Hero Numeral style" : undefined}
@@ -2106,7 +2107,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                             transform: `translateY(calc(-50% + ${tuning.ghostYShift}%)) translateX(${tuning.ghostXShift}px)`,
                                             opacity: tuning.ghostOpacity,
                                           }}
-                                          className="font-serif font-light text-stone-300 leading-none select-none absolute left-0 top-1/2 z-0 pointer-events-none tracking-tight"
+                                          className="font-cormorant font-light text-stone-300 leading-none select-none absolute left-0 top-1/2 z-0 pointer-events-none tracking-tight"
                                         >
                                           {chapterNum !== null ? chapterNum : ""}
                                         </div>
@@ -2126,7 +2127,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                             <div className="flex items-baseline gap-2 leading-none min-w-0">
                                               <span
                                                 style={{ fontSize: `${tuning.sceneNumSize}px` }}
-                                                className="font-sans font-bold text-[11pt] tracking-tight text-[#1a1715] leading-none shrink-0"
+                                                className="font-cormorant font-semibold text-[11pt] tracking-tight text-[#1a1715] leading-none shrink-0"
                                               >
                                                 {finalCoord}
                                               </span>
@@ -2136,7 +2137,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                                     fontSize: `${tuning.titleSize}px`,
                                                     letterSpacing: `${tuning.titleTracking}em`,
                                                   }}
-                                                  className="font-serif font-semibold italic uppercase text-[#1a1715] leading-none truncate tracking-[0.12em]"
+                                                  className="font-cormorant font-semibold italic uppercase text-[#1a1715] leading-none truncate tracking-[0.12em]"
                                                 >
                                                   {sceneTitleText}
                                                 </span>
@@ -2148,7 +2149,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                                   fontSize: `${tuning.formalSize}px`,
                                                   letterSpacing: `${tuning.formalTracking}em`,
                                                 }}
-                                                className="font-serif italic font-medium text-[#2F5496] shrink-0 leading-none tracking-wide"
+                                                className="font-cormorant italic font-medium text-[#2F5496] shrink-0 leading-none tracking-wide"
                                               >
                                                 {formalStructure}
                                               </span>
@@ -2174,7 +2175,7 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
                                               <span />
                                             )}
                                             {sceneDateline ? (
-                                              <span className="font-sans font-light italic text-[9.5pt] text-[#595959] shrink-0 leading-tight">
+                                              <span className="font-cormorant font-medium italic text-[9.5pt] text-[#595959] shrink-0 leading-tight">
                                                 {sceneDateline}
                                               </span>
                                             ) : (
