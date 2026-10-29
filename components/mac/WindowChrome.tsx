@@ -20,7 +20,6 @@ interface WindowChromeProps {
   onDeskPush?: () => void;
   onDirectCommit?: () => void;
   canDirectCommit?: boolean;
-  onExportShunn?: () => void;
   onExportMarkdown?: () => void;
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean | ((prev: boolean) => boolean)) => void;
@@ -42,7 +41,6 @@ export const WindowChrome: React.FC<WindowChromeProps> = ({
   onDeskPush,
   onDirectCommit,
   canDirectCommit = false,
-  onExportShunn,
   onExportMarkdown,
   sidebarOpen,
   setSidebarOpen,
@@ -165,25 +163,6 @@ export const WindowChrome: React.FC<WindowChromeProps> = ({
       {/* Right: Publisher Exports & Inspector Toggle */}
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1">
-          {onExportShunn && (
-            <button
-              type="button"
-              onClick={onExportShunn}
-              disabled={isCompiling}
-              className="text-xs px-2.5 py-1 rounded-md bg-zinc-200/80 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-medium transition-colors disabled:opacity-50 flex items-center gap-1.5"
-              title="Export William Shunn Standard Manuscript Format PDF"
-            >
-              {isCompiling ? (
-                <>
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping" />
-                  <span>Compiling PDF…</span>
-                </>
-              ) : (
-                "Shunn PDF"
-              )}
-            </button>
-          )}
-
           {onExportMarkdown && (
             <button
               type="button"

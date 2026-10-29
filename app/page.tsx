@@ -453,8 +453,6 @@ export default function LiteraryStudioWorkspace() {
   const [editorSettingsProjectId, setEditorSettingsProjectId] = useState<string | null>(null);
   const [layoutTuning, setLayoutTuning] = useState<LayoutTuningParams>(DEFAULT_LAYOUT_TUNING);
   const [previewScope, setPreviewScope] = useState<PreviewScope>("chapter");
-  const previewDebounceRef = useRef<NodeJS.Timeout | null>(null);
-  const triggerDebouncedPreviewRef = useRef<(scope?: PreviewScope, delayMs?: number) => void>(() => {});
   const [mapFocusParagraphIndex, setMapFocusParagraphIndex] = useState<number | null>(null);
   const [mapFocusRequestId, setMapFocusRequestId] = useState(0);
   const [draftSession, setDraftSession] = useState<DraftSession | null>(null);
@@ -536,7 +534,6 @@ export default function LiteraryStudioWorkspace() {
   const sceneTitleBlockPresent = useRef<boolean | null>(null);
   const [sceneReloadKey, setSceneReloadKey] = useState(0);
   const [isCompiling, setIsCompiling] = useState(false);
-  const [isPreviewing, setIsPreviewing] = useState(false);
   const [isAirDropping, setIsAirDropping] = useState(false);
   const [formatProfiles, setFormatProfiles] = useState<FormatProfile[]>([]);
   const [formatProfileId, setFormatProfileId] = useState("manuscript_submission");
@@ -545,7 +542,6 @@ export default function LiteraryStudioWorkspace() {
   const [selectedExportParts, setSelectedExportParts] = useState<number[]>([]);
   const [selectedExportChapters, setSelectedExportChapters] = useState<number[]>([]);
   const [selectedExportScenes, setSelectedExportScenes] = useState<number[]>([]);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [compilerError, setCompilerError] = useState<string | null>(null);
   const [compilerNotice, setCompilerNotice] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -998,8 +994,7 @@ export default function LiteraryStudioWorkspace() {
         body: JSON.stringify({ ...editorSettings, layout_tuning: tuning }),
       }).catch((err) => console.error("Failed to persist layout tuning:", err));
     }
-    triggerDebouncedPreviewRef.current?.(previewScope, 600);
-  }, [activeProjectId, editorSettings, editorSettingsProjectId, previewScope]);
+  }, [activeProjectId, editorSettings, editorSettingsProjectId]);
 
   useEffect(() => {
     if (!activeProjectId || !selectedScene) return;
@@ -2135,33 +2130,6 @@ export default function LiteraryStudioWorkspace() {
     }
   };
 
-  const requestCompiledPdf = async (scopeToCompile: PreviewScope = previewScope) => {
-    return requestCompilerArtifact("pdf", scopeToCompile);
-  };
-
-  const exportShunnPdf = async () => {
-    if (!activeProjectId || isCompiling) return;
-    setIsCompiling(true);
-    setCompilerError(null);
-    setCompilerNotice(null);
-    try {
-      const { blob, filename } = await requestCompilerArtifact("pdf");
-      const url = window.URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = filename;
-      anchor.click();
-      anchor.remove();
-      window.URL.revokeObjectURL(url);
-      setCompilerNotice(`Exported ${filename} successfully.`);
-    } catch (err) {
-      console.error("Export Shunn PDF failed:", err);
-      setCompilerError(err instanceof Error ? err.message : "Unable to export Shunn PDF.");
-    } finally {
-      setIsCompiling(false);
-    }
-  };
-
   const exportMarkdown = async () => {
     if (!activeProjectId || isCompiling) return;
     setIsCompiling(true);
@@ -2216,48 +2184,9 @@ export default function LiteraryStudioWorkspace() {
     }
   };
 
-  const handlePreviewPDF = async (scopeToCompile: PreviewScope = previewScope) => {
-    if (!activeProjectId) return;
-    setIsPreviewing(true);
-    setCompilerError(null);
-    try {
-      const { blob } = await requestCompiledPdf(scopeToCompile);
-      setPreviewUrl(window.URL.createObjectURL(blob));
-    } catch (err) {
-      console.error("Error preparing compiler preview:", err);
-      setCompilerError(err instanceof Error ? err.message : "Unable to preview the manuscript.");
-    } finally {
-      setIsPreviewing(false);
-    }
-  };
-
-  const handlePreviewPDFRef = useRef<(scope?: PreviewScope) => Promise<void>>(() => Promise.resolve());
-  useEffect(() => {
-    handlePreviewPDFRef.current = handlePreviewPDF;
-  });
-
-  const triggerDebouncedPreview = useCallback((scopeToCompile: PreviewScope = previewScope, delayMs: number = 600) => {
-    if (previewDebounceRef.current) clearTimeout(previewDebounceRef.current);
-    previewDebounceRef.current = setTimeout(() => {
-      void handlePreviewPDFRef.current(scopeToCompile);
-    }, delayMs);
-  }, [previewScope]);
-
-  useEffect(() => {
-    triggerDebouncedPreviewRef.current = triggerDebouncedPreview;
-  }, [triggerDebouncedPreview]);
-
   const handlePreviewScopeChange = useCallback((newScope: PreviewScope) => {
     setPreviewScope(newScope);
-    triggerDebouncedPreviewRef.current?.(newScope, 250);
   }, []);
-
-  useEffect(() => {
-    return () => {
-      if (previewDebounceRef.current) clearTimeout(previewDebounceRef.current);
-      if (previewUrl) window.URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
 
   const handleOpenContextPackage = () => {
     const chapter = Math.max(1, selectedScene?.chapter_number ?? 1);
@@ -3036,7 +2965,6 @@ export default function LiteraryStudioWorkspace() {
         onDeskPush={() => void pushSavedDeskToGit(false)}
         onDirectCommit={() => void directCommitActiveScene()}
         canDirectCommit={Boolean(selectedScene)}
-        onExportShunn={() => void exportShunnPdf()}
         onExportMarkdown={() => void exportMarkdown()}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
@@ -3423,7 +3351,7 @@ export default function LiteraryStudioWorkspace() {
                       aria-label="Compiler output type"
                       value={compilerOutputFormat}
                       onChange={(event) => setCompilerOutputFormat(event.target.value as CompilerOutputFormat)}
-                      disabled={isCompiling || isPreviewing || isAirDropping}
+                      disabled={isCompiling || isAirDropping}
                       className="max-w-[10rem] rounded border border-slate-700 bg-slate-900 px-1.5 py-1 text-[10px] text-slate-300 outline-none focus:border-indigo-500"
                     >
                       <option value="pdf">PDF</option>
@@ -3437,7 +3365,7 @@ export default function LiteraryStudioWorkspace() {
                       aria-label="PDF format profile"
                       value={formatProfileId}
                       onChange={(event) => setFormatProfileId(event.target.value)}
-                      disabled={isCompiling || isPreviewing || formatProfiles.length === 0}
+                      disabled={isCompiling || formatProfiles.length === 0}
                       className="max-w-[10rem] rounded border border-slate-700 bg-slate-900 px-1.5 py-1 text-[10px] text-slate-300 outline-none focus:border-indigo-500"
                     >
                       {formatProfiles.length === 0 ? (
@@ -3523,23 +3451,15 @@ export default function LiteraryStudioWorkspace() {
                     <button
                       type="button"
                       onClick={() => void handleCompileExport()}
-                      disabled={isCompiling || isPreviewing || isAirDropping}
+                      disabled={isCompiling || isAirDropping}
                       className="w-full rounded border border-indigo-500/60 bg-indigo-600 px-2.5 py-2 text-left text-xs font-medium text-white transition hover:bg-indigo-500 disabled:cursor-wait disabled:bg-indigo-900"
                     >
                       {isCompiling ? "Preparing export…" : `Export ${compilerOutputFormat === "pdf" ? "PDF" : compilerOutputFormat === "docx" ? "DOCX" : "Markdown"}`}
                     </button>
                     <button
                       type="button"
-                      onClick={() => void handlePreviewPDF(previewScope)}
-                      disabled={isCompiling || isPreviewing || isAirDropping}
-                      className="w-full rounded border border-indigo-500/60 bg-indigo-950/40 px-2.5 py-2 text-left text-xs text-indigo-200 transition hover:bg-indigo-900/60 disabled:cursor-wait disabled:opacity-50"
-                    >
-                      {isPreviewing ? "Preparing preview…" : "Preview selected PDF"}
-                    </button>
-                    <button
-                      type="button"
                       onClick={() => void handleAirDrop()}
-                      disabled={isCompiling || isPreviewing || isAirDropping}
+                      disabled={isCompiling || isAirDropping}
                       className="w-full rounded border border-sky-700/60 bg-sky-950/40 px-2.5 py-2 text-left text-xs text-sky-200 transition hover:bg-sky-900/60 disabled:cursor-wait disabled:opacity-50"
                     >
                       {isAirDropping ? "Preparing AirDrop…" : "Send selected export via AirDrop"}
@@ -4884,36 +4804,6 @@ export default function LiteraryStudioWorkspace() {
             <button type="button" onClick={() => setCompilerNotice(null)} className="text-emerald-300 hover:text-white" aria-label="Dismiss compiler notice">
               ×
             </button>
-          </div>
-        </div>
-      )}
-
-      {previewUrl && (
-        <div
-          className="fixed inset-0 z-[75] flex items-center justify-center bg-slate-950/85 p-4 backdrop-blur-sm"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="compiler-preview-title"
-        >
-          <div className="flex h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-lg border border-indigo-700/70 bg-slate-900 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 p-3">
-              <div>
-                <h2 id="compiler-preview-title" className="text-sm font-semibold text-slate-100">Formatted manuscript preview</h2>
-                <p className="mt-1 text-[10px] text-slate-500">This is the same project-scoped PDF produced by the formatter and download button.</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setPreviewUrl(null)}
-                className="px-2 py-1 text-xs text-slate-400 hover:text-slate-100"
-              >
-                Close
-              </button>
-            </div>
-            <iframe
-              title="Formatted manuscript PDF preview"
-              src={previewUrl}
-              className="min-h-0 flex-1 bg-slate-200"
-            />
           </div>
         </div>
       )}
