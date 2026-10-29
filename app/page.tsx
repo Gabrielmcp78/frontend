@@ -3736,11 +3736,6 @@ export default function LiteraryStudioWorkspace() {
               selectedScene={liveSelectedSceneForPreview}
               formatProfileId={formatProfileId}
               onFormatProfileChange={setFormatProfileId}
-              pdfUrl={previewUrl}
-              onCompilePdf={(scope) => void handlePreviewPDF(scope ?? previewScope)}
-              isCompilingPdf={isPreviewing}
-              onExportArtifact={handlePreviewExportArtifact}
-              isExportingArtifact={isCompiling}
               onTuningChange={handleLayoutTuningChange}
               scope={previewScope}
               onScopeChange={handlePreviewScopeChange}
@@ -3809,11 +3804,6 @@ export default function LiteraryStudioWorkspace() {
                 selectedScene={liveSelectedSceneForPreview}
                 formatProfileId={formatProfileId}
                 onFormatProfileChange={setFormatProfileId}
-                pdfUrl={previewUrl}
-                onCompilePdf={(scope) => void handlePreviewPDF(scope ?? previewScope)}
-                isCompilingPdf={isPreviewing}
-                onExportArtifact={handlePreviewExportArtifact}
-                isExportingArtifact={isCompiling}
                 onTuningChange={handleLayoutTuningChange}
                 scope={previewScope}
                 onScopeChange={handlePreviewScopeChange}

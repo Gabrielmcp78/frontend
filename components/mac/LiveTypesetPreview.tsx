@@ -1219,7 +1219,9 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
 }) => {
   const [internalScope, setInternalScope] = useState<PreviewScope>("chapter");
   const scope = propScope ?? internalScope;
-  const [renderMode, setRenderMode] = useState<"visual" | "pdf">("pdf");
+  // The live editor owns state; the isolated print document owns pagination.
+  // Do not default into the legacy server PDF iframe.
+  const [renderMode, setRenderMode] = useState<"visual" | "pdf">("visual");
   const [showTuner, setShowTuner] = useState<boolean>(false);
   const [selectedTarget, setSelectedTarget] = useState<StyleTarget>("all");
   const [copiedTuning, setCopiedTuning] = useState<boolean>(false);
