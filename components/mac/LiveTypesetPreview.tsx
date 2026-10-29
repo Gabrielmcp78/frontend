@@ -1042,6 +1042,15 @@ function getCleanChapterTitle(rawTitle: string | null | undefined, num: number |
   return cleaned;
 }
 
+function escapePrintHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export type StyleTarget =
   | "all"
   | "chapter-hero"
@@ -1425,6 +1434,71 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
     }));
   }, [targetScenes]);
 
+  const printFromDocumentState = React.useCallback(() => {
+    if (typeof window === "undefined" || targetScenes.length === 0) return;
+
+    // Print is deliberately rendered from the selected scene state and tuning
+    // payload, never from the active editor/preview DOM.
+    const printWindow = window.open("", "literary-studio-print");
+    if (!printWindow) return;
+
+    const sceneMarkup = targetScenes.map((scene, index) => {
+      const coord = scene.chapter_number && scene.scene_number_in_chapter
+        ? `${scene.chapter_number}.${scene.scene_number_in_chapter}`
+        : `${scene.scene_number}`;
+      const processed = processSceneContent(
+        scene.content_html || "<p>Empty scene content.</p>",
+        scene.title,
+        coord,
+        scene.chapter_number ?? null,
+        index === 0 || targetScenes[index - 1]?.chapter_number !== scene.chapter_number,
+        tuning.openingIndent,
+      );
+      return `<article class="scene">
+        ${processed.formalStructure || processed.cleanTitle ? `<header class="scene-header"><div class="scene-number">${escapePrintHtml(coord)}</div><div><div class="formal">${escapePrintHtml(processed.formalStructure || "")}</div><h2>${escapePrintHtml(processed.cleanTitle || scene.title || "")}</h2>${processed.tempoMarking ? `<div class="tempo">${escapePrintHtml(processed.tempoMarking)}</div>` : ""}</div></header>` : ""}
+        ${processed.dateline ? `<div class="dateline">${escapePrintHtml(processed.dateline)}</div>` : ""}
+        <div class="prose">${processed.renderedHtml}</div>
+      </article>`;
+    }).join("\n");
+
+    const tuningPayload = escapePrintHtml(JSON.stringify(tuning));
+    printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${escapePrintHtml(projectTitle)} — print</title>
+      <style>
+        @page { size: 6in 9in; margin: 0.7in 0.72in 0.78in; }
+        :root { --body-size: ${tuning.bodyFontSize}px; --line-height: ${tuning.bodyLineHeight}; --indent: ${tuning.openingIndent}in; --header-size: ${tuning.runningHeaderSize}px; --header-tracking: ${tuning.runningHeaderTracking}em; --math-border: ${tuning.mathBorderWidth}px; --math-x: ${tuning.mathPaddingX}px; --math-y: ${tuning.mathPaddingY}px; }
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; background: #fff; color: #2c2825; }
+        body { font-family: Georgia, 'Times New Roman', serif; font-size: var(--body-size); line-height: var(--line-height); }
+        .book { width: 100%; }
+        .book-title { text-align: center; margin: 0 0 2.2em; break-after: avoid; }
+        .book-title h1 { margin: 0; font-size: 1.55em; letter-spacing: .18em; text-transform: uppercase; }
+        .book-title p { margin: .5em 0 0; font-size: .85em; }
+        .scene { break-inside: auto; page-break-inside: auto; margin: 0 0 2.2em; }
+        .scene-header { display: flex; gap: 1em; align-items: baseline; border-bottom: ${tuning.ruleThickness}px solid #777; margin: 0 0 ${tuning.sceneHeaderBottomGap}px; padding-bottom: ${tuning.titleGap}px; break-after: avoid; }
+        .scene-number { font-size: ${tuning.sceneNumSize}px; color: #5b657e; }
+        .formal { font-size: ${tuning.formalSize}px; letter-spacing: ${tuning.formalTracking}em; text-transform: uppercase; }
+        h2 { margin: 0; font-size: ${tuning.titleSize}px; letter-spacing: ${tuning.titleTracking}em; text-transform: uppercase; }
+        .tempo, .dateline { font-size: ${tuning.tempoSize}px; font-style: italic; margin: .35em 0 1em; }
+        .dateline { font-size: ${tuning.runningHeaderSize}px; letter-spacing: .08em; text-transform: uppercase; }
+        .prose > p { margin: 0 0 .75em; text-align: justify; orphans: 3; widows: 3; }
+        .prose > p:not(:first-child) { text-indent: ${tuning.openingIndent}in; }
+        .prose > p:first-child { text-indent: 0; }
+        .typeset-math-display { margin: ${tuning.mathPaddingY}px auto; padding: ${tuning.mathPaddingY}px ${tuning.mathPaddingX}px; border-left: ${tuning.mathBorderWidth}px solid #777; border-right: ${tuning.mathBorderWidth}px solid #777; text-align: center; break-inside: avoid; }
+        .typeset-sign-block, .typeset-sign-card { text-align: center; break-inside: avoid; }
+        .typeset-drop-cap { float: left; font-size: 3.25em; line-height: .8; padding-right: .18em; }
+        .typeset-lead-caps { font-size: ${tuning.leadCapsSize}px; letter-spacing: ${tuning.leadCapsTracking}em; font-weight: 600; }
+        .scene + .scene { break-before: auto; }
+        .provenance { display: none; }
+        @media screen { body { max-width: 6in; margin: 24px auto; box-shadow: 0 0 0 1px #ddd; padding: .7in .72in .78in; } }
+        @media print { .book-title { page-break-after: avoid; } }
+      </style></head><body><main class="book">
+      <header class="book-title"><h1>${escapePrintHtml(projectTitle)}</h1><p>by ${escapePrintHtml(author)}</p></header>
+      ${sceneMarkup}
+      <script type="application/json" id="layout-payload">${tuningPayload}</script>
+      </main><script>window.addEventListener('load',()=>setTimeout(()=>window.print(),80));</script></body></html>`);
+    printWindow.document.close();
+  }, [author, projectTitle, targetScenes, tuning]);
+
   const activeChapterLabel = selectedScene?.chapter_number
     ? `Chapter ${selectedScene.chapter_number}`
     : selectedScene?.chapter_title || "Chapter";
@@ -1535,8 +1609,8 @@ export const LiveTypesetPreview: React.FC<LiveTypesetPreviewProps> = ({
           <div className="flex items-center gap-1.5 border-l border-zinc-700 pl-2 ml-1 no-print">
             <button
               type="button"
-              onClick={() => window.print()}
-              title="Print or Save WYSIWYG 6×9 typeset layout directly to PDF"
+              onClick={printFromDocumentState}
+              title="Print or Save a 6×9 paginated document rendered from document JSON and layout settings"
               className="text-xs px-2.5 py-1 rounded bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 font-medium flex items-center gap-1 transition-all"
             >
               <span>🖨️</span> Print / Save PDF
